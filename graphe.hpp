@@ -9,39 +9,37 @@ class Graphe {
 public:
 	std::vector<Point> _pointsPossibles;
 	std::vector<Lien> _liens;
-	Graphe(vector<Lien> liens, vector<Point> pointsPossibles) {
+	Graphe(std::vector<Lien> liens, std::vector<Point> pointsPossibles) {
 		_pointsPossibles = pointsPossibles;
 		_liens = liens;
 	}
 
-};
+	std::vector<Lien> getLiens()  const { return _liens; }
+	std::vector<Point> getPointsPossibles()  const { return _pointsPossibles; }
 
-std::vector<Point> getLiens()  const { return _liens; }
-std::vector<Lien> getPointsPossibles()  const { return _pointsPossibles; }
-
-int getNbCroisement()
-{
-	int total = 0;
-	for (int i = 0; i < _liens.size(); ++i)
+	int getNbCroisement()
 	{
-		for (int j = 0; i < _liens.size(); ++j)
+		int total = 0;
+		for (int i = 0; i < _liens.size(); ++i)
 		{
-			if (i != j)
+			for (int j = 0; i < _liens.size(); ++j)
 			{
-				Lien lien1 = _liens[i], lien2 = _liens[j];
-				if (!(lien1.contains(lien2.getNoeud1()) || lien1.contains(lien2.getNoeud2())))
+				if (i != j)
 				{
-					if (Intersection.seCroisent(lien1, lien2))
+					Lien lien1 = _liens[i], lien2 = _liens[j];
+					if (!(lien1.contains(lien2.getNoeud1()) || lien1.contains(lien2.getNoeud2())))
 					{
-						++total;
+						if (Intersection.seCroisent(lien1, lien2))
+						{
+							++total;
+						}
 					}
 				}
 			}
 		}
+		return total;
 	}
-	return total;
-}
 
-
+};
 
 #endif

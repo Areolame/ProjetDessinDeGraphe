@@ -16,13 +16,15 @@ int main() {
 	int gridWidth, gridHeight;
 
 	// ----- LECTURE D'UN FICHIER JSON DANS UN Graph -----
-	string nomFichierGraph = "auto21-8_MaxFace2";
-	string nomFichierSlots = "auto21-8_MaxFace2";
+	string nomFichierGraph = "graph_exemple1";
+	string nomFichierSlots = "slot_exemple1";
 	string fileGraph = "D:/The World/Cours/M2S1/ProjetDessinGraphe/GitHub/ProjetDessinDeGraphe/exemple/Graphe/" + nomFichierGraph + ".json";
 	string fileSlots = "D:/The World/Cours/M2S1/ProjetDessinGraphe/GitHub/ProjetDessinDeGraphe/exemple/Slots/" + nomFichierSlots + ".json";
 
-	readFromJsonGraph(fileGraph);
-	readFromJsonSlots(fileSlots, gridWidth, gridHeight);
+	Graphe G;
+
+	readFromJsonGraph(G, fileGraph);
+	readFromJsonSlots(G, fileSlots, gridWidth, gridHeight);
 
 	bool useOpenGL = true;
 	bool planarize = false;
@@ -34,7 +36,7 @@ int main() {
 	// OpenGL
 	srand(static_cast<unsigned int>(time(NULL)));
 	if (useOpenGL) {
-		dispOpenGL(gridWidth, gridHeight, maxX, maxY, nomFichierGraph);
+		dispOpenGL(G, gridWidth, gridHeight, maxX, maxY, nomFichierGraph);
 	}
 	return 0;
 }

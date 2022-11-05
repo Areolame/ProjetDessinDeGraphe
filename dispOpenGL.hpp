@@ -77,7 +77,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		}
 }
 
-void dispOpenGL(const int gridWidth, const int gridHeight, int maxX, int maxY, string nom_graphe) {
+void dispOpenGL(Graphe& G, const int gridWidth, const int gridHeight, int maxX, int maxY, string nom_graphe) {
 
 	// Chrono pour le temps d'exec, utilisé pour le stockage de donnée pour la création de graphiques, a supprimer lors de vrai tests
 	auto start = std::chrono::system_clock::now();
@@ -150,49 +150,28 @@ void dispOpenGL(const int gridWidth, const int gridHeight, int maxX, int maxY, s
 		glEnd();
 		//afficher les edge
 		glColor3f(1.0f, 1.0f, 1.0f);
-		/*
-		for (auto e : G.edges)
-		{
-			if ((showAllEdges) && (setEdge.find(e) != setEdge.end())) {
-				glColor3f(0.0f, 0.0f, 1.0f);
-			}
-			else if (e == selectedEdge) {
-				glColor3f(0.0f, 1.0f, 0.0f);
-			}
-			else {
-				glColor3f(1.0f, 1.0f, 1.0f);
-			}
+		for (int i = 0; i < G.getLiens().size(); i++) {
+			//glColor3f(1.0f, 1.0f, 1.0f);
 			glBegin(GL_LINE_STRIP);
-			glVertex2d(GL.x(e->source()), GL.y(e->source()));
-			IPolyline& bends = GL.bends(e);
-			for (ListIterator<IPoint> i = bends.begin(); i.valid(); i++) {
-				glVertex2d((*i).m_x, (*i).m_y);
-			}
-			glVertex2d(GL.x(e->target()), GL.y(e->target()));
+			glVertex2d(G.getLiens()[i].getNoeud1().getX(), G.getLiens()[i].getNoeud1().getY());
+			glVertex2d(G.getLiens()[i].getNoeud2().getX(), G.getLiens()[i].getNoeud2().getY());
 			glEnd();
 		}
-		*/
 		//afficher les nodes
 		glPointSize(7);
 		glBegin(GL_POINTS);
-		/*for (int i = 0; i < vectorNodeBends.size(); i++) {
-			if (!vectorNodeBends[i]->isNode) {
-				glColor3f(1.0f, 1.0f, 1.0f);
-				glVertex2d(*vectorNodeBends[i]->a_x, *vectorNodeBends[i]->a_y);
-			}
+		for (int i = 0; i < G.getNoeuds().size(); i++) {
+			//glColor3f(1.0f, 1.0f, 1.0f);
+			glVertex2d(G.getNoeuds()[i].getX(), G.getNoeuds()[i].getY());
+			glEnd();
 		}
-		for (int i = 0; i < vectorNodeBends.size(); i++) {
-			if (vectorNodeBends[i]->isNode) {
-				glColor3f(1.0f, 0.0f, 0.0f);
-				glVertex2d(*vectorNodeBends[i]->a_x, *vectorNodeBends[i]->a_y);
-			}
+		//afficher les slots
+		glColor3f(0.0f, 0.0f, 1.0f);
+		for (int i = 0; i < G.getEmplacements().size(); i++) {
+			//glColor3f(0.0f, 0.0f, 1.0f);
+			glVertex2d(G.getEmplacements()[i].getX(), G.getEmplacements()[i].getY());
+			glEnd();
 		}
-		for (int i = 0; i < vectorNodeBends.size(); i++) {
-			if (i == selectedNodeBendNum) {
-				glColor3f(0.0f, 0.0f, 1.0f);
-				glVertex2d(*vectorNodeBends[i]->a_x, *vectorNodeBends[i]->a_y);
-			}
-		}*/
 		glEnd();
 		glfwSwapBuffers(window);
 		glfwPollEvents();

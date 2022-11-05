@@ -22,6 +22,11 @@ public:
 	void setNoeud1(Noeud* noeud1) { _noeud1 = noeud1; }
 	void setNoeud2(Noeud* noeud2) { _noeud2 = noeud2; }
 
+	bool contains(Noeud* noeud)
+	{
+		return (_noeud1 == noeud || _noeud2 == noeud);
+	}
+
 };
 
 #endif
