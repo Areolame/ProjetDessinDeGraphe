@@ -48,6 +48,7 @@ public:
 				std::cout << "[LOG ERROR] Maximum emplacements atteints";
 				return;
 			}
+			emplacement.setNoeud(&noeud);
 		}
 	}
 

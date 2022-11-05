@@ -25,12 +25,12 @@ public:
 	void setNoeud(Noeud* noeud)
 	{
 		_id = noeud->getId();
-		estDisponible = false;
+		_estDisponible = false;
 	}
 	void removeNoeud()
 	{
 		_id = -1;
-		estDisponible = true;
+		_estDisponible = true;
 	}
 
 };
