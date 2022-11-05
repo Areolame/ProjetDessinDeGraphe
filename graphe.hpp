@@ -4,18 +4,28 @@
 #include <vector>
 #include "lien.hpp"
 #include "point.hpp"
+#include "emplacement.hpp"
 
 class Graphe {
 public:
-	std::vector<Point> _pointsPossibles;
+	std::vector<Emplacement> _pointsPossibles;
 	std::vector<Lien> _liens;
-	Graphe(std::vector<Lien> liens, std::vector<Point> pointsPossibles) {
-		_pointsPossibles = pointsPossibles;
+	std::vector<Noeud> _noeuds;
+	Graphe(std::vector<Lien> liens, std::vector<Emplacement> emplacementsPossibles) {
+		_emplacementsPossibles = emplacementsPossibles;
 		_liens = liens;
 	}
 
+	Graphe()
+	{}
+
+	void setNoeuds(std::vector<Noeud> noeuds){_noeuds = noeuds;}
+	void setLiens(std::vector<Lien> liens) { _liens = liens; }
+	void setPoints(std::vector<Point> emplacementsPossibles) { _emplacementsPossibles = emplacementsPossibles; }
+
+	std::vector<Noeud> getNoeuds() const { return _noeuds; }
 	std::vector<Lien> getLiens()  const { return _liens; }
-	std::vector<Point> getPointsPossibles()  const { return _pointsPossibles; }
+	std::vector<Emplacement> getEmplacementsPossibles()  const { return _pointsPossibles; }
 
 	int getNbCroisement()
 	{
