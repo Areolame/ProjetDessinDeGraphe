@@ -8,7 +8,7 @@ class Emplacement {
 public:
 	Point* _position;
 	int _id = -1;
-	bool estDisponible = true;
+	bool _estDisponible = true;
 
 	Emplacement(Point* position) {
 		_position = position;
@@ -17,6 +17,7 @@ public:
 	Point getPosition() const { return *_position; }
 	int getX() const { return _position->getX(); }
 	int getY() const { return _position->getX(); }
+	bool estDisponible() { return _estDisponible; }
 
 	void setPosition(Point* position) { _position = position; }
 	void setX(int* x) { _position->setX(x); }
