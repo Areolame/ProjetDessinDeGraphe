@@ -8,7 +8,7 @@
 
 class Graphe {
 public:
-	std::vector<Emplacement> _pointsPossibles;
+	std::vector<Emplacement> _emplacementsPossibles;
 	std::vector<Lien> _liens;
 	std::vector<Noeud> _noeuds;
 	Graphe(std::vector<Lien> liens, std::vector<Emplacement> emplacementsPossibles) {
@@ -21,11 +21,11 @@ public:
 
 	void setNoeuds(std::vector<Noeud> noeuds){_noeuds = noeuds;}
 	void setLiens(std::vector<Lien> liens) { _liens = liens; }
-	void setPoints(std::vector<Point> emplacementsPossibles) { _emplacementsPossibles = emplacementsPossibles; }
+	void setPoints(std::vector<Emplacement> emplacementsPossibles) { _emplacementsPossibles = emplacementsPossibles; }
 
 	std::vector<Noeud> getNoeuds() const { return _noeuds; }
 	std::vector<Lien> getLiens()  const { return _liens; }
-	std::vector<Emplacement> getEmplacementsPossibles()  const { return _pointsPossibles; }
+	std::vector<Emplacement> getEmplacementsPossibles()  const { return _emplacementsPossibles; }
 
 	int getNbCroisement()
 	{
