@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+.vs/ProjectSettings.json
+.vs/ProjetDessinDeGraphe/v16/Browse.VC.db
+.vs/ProjetDessinDeGraphe/v16/Browse.VC.db-shm
+.vs/ProjetDessinDeGraphe/v16/Browse.VC.db-wal
+.vs/ProjetDessinDeGraphe/v16/Browse.VC.opendb
+.vs/slnx.sqlite
