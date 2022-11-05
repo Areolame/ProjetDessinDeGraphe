@@ -2,27 +2,6 @@
 #define GEOMETRIE_HPP
 #include <algorithm>
 
-class Segment {
-public:
-	int globalNum = 0;
-	int* sourceX;
-	int* sourceY;
-	int* targetX;
-	int* targetY;
-	Segment(int* srcx, int* srcy, int* trgx, int* trgy) {
-		sourceX = srcx;
-		sourceY = srcy;
-		targetX = trgx;
-		targetY = trgy;
-	}
-	bool isNull() {
-		return ((*sourceX == *targetX) && (*sourceY == *targetY));
-	}
-	void assignGlobalNum(int num) {
-		globalNum = num;
-	}
-};
-
 //renvoie 1,2,3 ou 4 si lpoint t est 1: en haut à droite, 2: en haut à gauche, 3: en bas à gauche, 4: en bas à droite du point s
 //on considère s != t
 int quadrant(int sx, int sy, int tx, int ty) {

@@ -8,13 +8,11 @@ using std::string;
 using nlohmann::json;
 
 // ----- CREATION D'UN Graph A PARTIR D'UN FICHIER JSON -----
-void readFromJson(string input, int& gridWidth, int& gridHeight) {
+// Precondition: Les id des noeuds sont ordonnées et commencent par 0
+void readFromJsonGraph(string input) {
 	std::ifstream inp(input);
 	json j;
 	inp >> j;
-	gridWidth = j["width"];
-	gridHeight = j["height"];
-	std::cout << "gridWidth: " << gridWidth << " gridHeight: " << gridHeight << std::endl;
 
 	// Si le fichier ne contient pas de node
 	if (j["nodes"] == nullptr) {
@@ -30,8 +28,30 @@ void readFromJson(string input, int& gridWidth, int& gridHeight) {
 		id1 = j["edges"][i]["source"];
 		id2 = j["edges"][i]["target"];
 	}
-	//delete[] nodeTab;
-	//delete[] edgeTab;
+}
+
+// Lecture des slots
+// Precondition: Les id des slots sont ordonnés et commencent par 0
+void readFromJsonSlots(string input, int& gridWidth, int& gridHeight) {
+	std::ifstream inp(input);
+	json j;
+	inp >> j;
+
+	// Si le fichier ne contient pas de slots
+	if (j["slots"] == nullptr) {
+		exit(1);
+	}
+
+	int slotsNumber = static_cast<int>(j["edges"].size());
+	int x, y;
+	for (int i = 0; i < slotsNumber; i++) {
+		x = j["slots"][i]["x"];
+		y = j["slots"][i]["y"];
+		if (x > gridWidth) { gridWidth = x; }
+		if (y > gridHeight) { gridHeight = y; }
+	}
+
+	std::cout << "gridWidth: " << gridWidth << " gridHeight: " << gridHeight << std::endl;
 }
 
 // ----- ECRITURE D'UN Graph DANS UN FICHIER JSON -----
