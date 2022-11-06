@@ -25,6 +25,13 @@ int main() {
 
 	readFromJsonGraph(G, fileGraph);
 	readFromJsonSlots(G, fileSlots, gridWidth, gridHeight);
+	std::cout << "Grid: " << gridWidth << " " << gridHeight << std::endl;
+	gridWidth = 10;
+	gridHeight = 10;
+
+	G.placementAleatoire();
+	//G.afficherNoeuds();
+	//G.afficherLiens();
 
 	bool useOpenGL = true;
 	bool planarize = false;

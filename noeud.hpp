@@ -5,25 +5,25 @@
 
 class Noeud {
 public:
-	Emplacement* _emplacement;
+	Emplacement* _emplacement = nullptr;
 	int _id;
 	Noeud(Emplacement* emplacement, int id) {
 		_emplacement = emplacement;
 		_id = id;
 	}
 	Noeud(int id) {
-		_emplacement = nullptr;
 		_id = id;
 	}
 
-	Emplacement getEmplacement()  const { return *_emplacement; }
+	Emplacement* getEmplacement()  const { return _emplacement; }
 	int getX()  const { return _emplacement->getX(); }
 	int getY()  const { return _emplacement->getY(); }
 	int getId() const { return _id; }
 
-	void setEmplacement(Emplacement emplacement)
+	void setEmplacement(Emplacement* emplacement)
 	{
-		emplacement.setNoeud(this);
+		_emplacement = emplacement;
+		emplacement->setNoeud(this);
 	}
 
 };

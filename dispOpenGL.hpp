@@ -151,26 +151,22 @@ void dispOpenGL(Graphe& G, const int gridWidth, const int gridHeight, int maxX, 
 		//afficher les edge
 		glColor3f(1.0f, 1.0f, 1.0f);
 		for (int i = 0; i < G.getLiens().size(); i++) {
-			//glColor3f(1.0f, 1.0f, 1.0f);
 			glBegin(GL_LINE_STRIP);
-			glVertex2d(G.getLiens()[i].getNoeud1().getX(), G.getLiens()[i].getNoeud1().getY());
-			glVertex2d(G.getLiens()[i].getNoeud2().getX(), G.getLiens()[i].getNoeud2().getY());
-			glEnd();
-		}
-		//afficher les nodes
-		glPointSize(7);
-		glBegin(GL_POINTS);
-		for (int i = 0; i < G.getNoeuds().size(); i++) {
-			//glColor3f(1.0f, 1.0f, 1.0f);
-			glVertex2d(G.getNoeuds()[i].getX(), G.getNoeuds()[i].getY());
+			glVertex2d(G.getLiens()[i].getNoeud1()->getX(), G.getLiens()[i].getNoeud1()->getY());
+			glVertex2d(G.getLiens()[i].getNoeud2()->getX(), G.getLiens()[i].getNoeud2()->getY());
 			glEnd();
 		}
 		//afficher les slots
-		glColor3f(0.0f, 0.0f, 1.0f);
-		for (int i = 0; i < G.getEmplacements().size(); i++) {
-			//glColor3f(0.0f, 0.0f, 1.0f);
-			glVertex2d(G.getEmplacements()[i].getX(), G.getEmplacements()[i].getY());
-			glEnd();
+		glPointSize(7);
+		glBegin(GL_POINTS);
+		glColor3f(0.0f, 1.0f, 0.0f);
+		for (int i = 0; i < G.getEmplacementsPossibles().size(); i++) {
+			glVertex2d(G.getEmplacementsPossibles()[i].getX(), G.getEmplacementsPossibles()[i].getY());
+		}
+		//afficher les nodes
+		glColor3f(1.0f, 0.0f, 0.0f);
+		for (int i = 0; i < G.getNoeuds().size(); i++) {
+			glVertex2d(G.getNoeuds()[i]->getX(), G.getNoeuds()[i]->getY());
 		}
 		glEnd();
 		glfwSwapBuffers(window);

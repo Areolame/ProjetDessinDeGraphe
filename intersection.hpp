@@ -9,16 +9,6 @@
 using std::min;
 using std::max;
 
-bool seCroisent(Point p, Point q, Point r, Point s)
-{
-	return seCroisent(p.getX(), p.getY(), q.getX(), q.getY(), r.getX(), r.getY(), s.getX(), s.getY());
-}
-
-bool seCroisent(Lien lien1, Lien lien2)
-{
-	return seCroisent(lien1.getNoeud1().getPosition(), lien1.getNoeud2().getPosition(), lien2.getNoeud1().getPosition(), lien2.getNoeud2().getPosition());
-}
-
 //renvoie vrai si les segments [p,q] et [r,s] se croisent
 bool seCroisent(int px, int py, int qx, int qy, int rx, int ry, int sx, int sy) {
 
@@ -63,6 +53,16 @@ bool seCroisent(int px, int py, int qx, int qy, int rx, int ry, int sx, int sy) 
 	//deux points sont de cotes opposes par rapport a un segment
 	//les segments se croisent forcement
 	return true;
+}
+
+bool seCroisent(Point p, Point q, Point r, Point s)
+{
+	return seCroisent(p.getX(), p.getY(), q.getX(), q.getY(), r.getX(), r.getY(), s.getX(), s.getY());
+}
+
+bool seCroisent(Lien lien1, Lien lien2)
+{
+	return seCroisent(lien1.getNoeud1()->getEmplacement()->getPosition(), lien1.getNoeud2()->getEmplacement()->getPosition(), lien2.getNoeud1()->getEmplacement()->getPosition(), lien2.getNoeud2()->getEmplacement()->getPosition());
 }
 
 #endif
