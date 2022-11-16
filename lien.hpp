@@ -1,12 +1,12 @@
-#ifndef ARETES_HPP
-#define ARETES_HPP
+#ifndef LIEN_HPP
+#define LIEN_HPP
 
 #include "noeud.hpp"
 
-class Aretes {
+class Lien {
 public:
 	Noeud* _noeud1, *_noeud2;
-	Aretes(Noeud* noeud1, Noeud* noeud2) {
+	Lien(Noeud* noeud1, Noeud* noeud2) {
 		_noeud1 = noeud1;
 		_noeud2 = noeud2;
 	}
@@ -25,17 +25,6 @@ public:
 	bool contains(Noeud* noeud)
 	{
 		return (_noeud1->getId() == noeud->getId() || _noeud2->getId() == noeud->getId());
-	}
-
-	// A APPELER UNIQUEMENT SI LES LIENS ONT UN NOEUD EN COMMUN
-	// Renvoie nullptr si aucun noeud en commun
-	Noeud* nodeNotInCommon(Aretes l) {
-		if (_noeud1->getId() == l.getNoeud1()->getId() || _noeud1->getId() == l.getNoeud2()->getId()) { return _noeud2; }
-		return _noeud1;
-	}
-
-	bool estPlace() {
-		return (_noeud1->getEmplacement() != nullptr && _noeud2->getEmplacement() != nullptr);
 	}
 
 };

@@ -13,6 +13,9 @@ bool save_current = false;
 bool make_copy = false;
 bool apply_copy = false;
 bool show_grid_size = true;
+bool startRecuit = false;
+bool randomReset = false;
+bool gloutonReset = false;
 int currentZoom = 0;
 bool showAllEdges = false;
 std::vector<std::pair<int, int>> graphCopy;
@@ -55,8 +58,13 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 			move_manual = true;
 			break;
 		case GLFW_KEY_1:
+			randomReset = true;
+			break;
+		case GLFW_KEY_2:
+			gloutonReset = true;
 			break;
 		case GLFW_KEY_KP_1:
+			startRecuit = true;
 			break;
 		case GLFW_KEY_KP_9:
 			save_current = true;
@@ -138,6 +146,22 @@ void dispOpenGL(Graphe& G, const int gridWidth, const int gridHeight, int maxX, 
 		else if (apply_copy) {
 			//applyGraph(graphCopy);
 			apply_copy = false;
+		}
+		else if (startRecuit) {
+			std::cout << "Nb Croisement debut recuit: " << G.getNbCroisement() << std::endl;
+			G.recuitSimule();
+			std::cout << "Nb Croisement fin recuit: " << G.getNbCroisement() << std::endl;
+			startRecuit = false;
+		}
+		else if (randomReset) {
+			G.clearNodeEmplacement();
+			G.placementAleatoire();
+			randomReset = false;
+		}
+		else if (gloutonReset) {
+			G.clearNodeEmplacement();
+			G.glouton();
+			gloutonReset = false;
 		}
 		// affichage de la grille avec une marge de 1
 		glColor3f(0.0f, 1.0f, 0.0f);

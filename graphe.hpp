@@ -50,44 +50,90 @@ public:
 		}
 	}
 
+	void clearNodeEmplacement() {
+		for (int i = 0; i < _noeuds.size(); i++) {
+			_noeuds[i].clearEmplacement();
+		}
+	}
+
 	void placementAleatoire()
 	{
 		std::cout << "taille: " << _noeuds.size() << std::endl;
 		for (int i = 0; i < _noeuds.size(); ++i)
 		{
-			int emplacementPossibleSize = _emplacementsPossibles.size();
-			Emplacement* emplacement = nullptr;
-			do
-			{
-				emplacement = &_emplacementsPossibles[generateRand(emplacementPossibleSize) - 1];
-			} while (!emplacement->estDisponible());
-			_noeuds[i].setEmplacement(emplacement);
+			int emplacementId = generateRand(_emplacementsPossibles.size()) - 1;
+			while (!_emplacementsPossibles[emplacementId].estDisponible()) {
+				emplacementId = (emplacementId + 1) % _emplacementsPossibles.size();
+			}
+			_noeuds[i].setEmplacement(&_emplacementsPossibles[emplacementId]);
 		}
 	}
 
 	long getNbCroisement()
 	{
+		int debug = 0;
 		long total = 0;
-		for (int i = 0; i < _liens.size(); ++i)
+		for (int i = 0; i < _liens.size()-1; ++i)
 		{
 			for (int j = i + 1; j < _liens.size(); ++j)
 			{
-				Aretes aretes1 = _liens[i], aretes2 = _liens[j];
-				if (!(aretes1.contains(aretes2.getNoeud1()) || aretes1.contains(aretes2.getNoeud2())))
+				//Aretes aretes1 = _liens[i], aretes2 = _liens[j];
+				if (!(_liens[i].contains(_liens[j].getNoeud1()) || _liens[i].contains(_liens[j].getNoeud2())))
 				{
-					if (seCroisent(aretes1, aretes2))
+					if (seCroisent(_liens[i], _liens[j]))
 					{
-						++total;
 						if (surSegment(_liens[i], *_liens[j].getNoeud1())|| surSegment(_liens[i], *_liens[j].getNoeud2()))
 						{
-							total += INT_MAX;
+							total += 1000;
+						}
+						else {
+							++total;
 						}
 					}
 				}
 				else {
-					if (surSegment(_liens[i], *_liens[j].getNoeud1()) || surSegment(_liens[i], *_liens[j].getNoeud2()))
+					Noeud* nodeNotInCommon = _liens[j].nodeNotInCommon(_liens[i]);
+					if (surSegment(_liens[i], *nodeNotInCommon))
 					{
-						total += INT_MAX;
+						total += 1000;
+					}
+				}
+			}
+		}
+		return total;
+	}
+
+	long getNbCroisementGlouton()
+	{
+		int debug = 0;
+		long total = 0;
+		for (int i = 0; i < _liens.size() - 1; ++i)
+		{
+			if (_liens[i].estPlace()) {
+				for (int j = i + 1; j < _liens.size(); ++j)
+				{
+					if (_liens[j].estPlace()) {
+						//Aretes aretes1 = _liens[i], aretes2 = _liens[j];
+						if (!(_liens[i].contains(_liens[j].getNoeud1()) || _liens[i].contains(_liens[j].getNoeud2())))
+						{
+							if (seCroisent(_liens[i], _liens[j]))
+							{
+								if (surSegment(_liens[i], *_liens[j].getNoeud1()) || surSegment(_liens[i], *_liens[j].getNoeud2()))
+								{
+									total += 1000;
+								}
+								else {
+									++total;
+								}
+							}
+						}
+						else {
+							Noeud* nodeNotInCommon = _liens[j].nodeNotInCommon(_liens[i]);
+							if (surSegment(_liens[i], *nodeNotInCommon))
+							{
+								total += 1000;
+							}
+						}
 					}
 				}
 			}
@@ -104,6 +150,7 @@ public:
 		int nbWorst = 0;
 		long nbIntersection = getNbCroisement(); // Remplacer par la fonction qui calcule le score d'intersection
 		for (int iter = 0; (t > 0.0001) && (nbIntersection > 0); iter++) {
+			//std::cout << "t: " << t << std::endl;
 			// Selection aléatoire du noeud
 			int randomId = generateRand(_noeuds.size() - 1);
 			// Selection aléatoire d'un emplacement disponible (pas tres équiprobable)
@@ -135,6 +182,37 @@ public:
 				}
 			}
 			t *= cool;
+		}
+	}
+
+	void glouton() {
+		for (int i = 0; i < _noeuds.size(); i++) {
+			// Selection aléatoire du noeud
+			int randomId = generateRand(_noeuds.size() - 1);
+			while (_noeuds[randomId].getEmplacement() != nullptr) {
+				randomId = (randomId + 1) % _noeuds.size();
+			}
+			// Selection aléatoire d'un emplacement disponible (pas tres équiprobable)
+			int randomEmpId = generateRand(_emplacementsPossibles.size() - 1);
+			while (!_emplacementsPossibles[randomEmpId].estDisponible()) {
+				randomEmpId = (randomEmpId + 1) % _emplacementsPossibles.size();
+			}
+			_noeuds[randomId].setEmplacement(&_emplacementsPossibles[randomEmpId]);
+			long bestScore = getNbCroisementGlouton();
+			int bestId = randomEmpId;
+			int index = (randomEmpId + 1) % _emplacementsPossibles.size();
+			for (int j = 1; j < _emplacementsPossibles.size(); j++) {
+				while (!_emplacementsPossibles[index].estDisponible()) {
+					index = (index + 1) % _emplacementsPossibles.size();
+				}
+				_noeuds[randomId].setEmplacement(&_emplacementsPossibles[index]);
+				long newScore = getNbCroisementGlouton();
+				if (newScore < bestScore) {
+					bestScore = newScore;
+					bestId = index;
+				}
+			}
+			_noeuds[randomId].setEmplacement(&_emplacementsPossibles[bestId]);
 		}
 	}
 

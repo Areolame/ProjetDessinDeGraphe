@@ -23,8 +23,18 @@ public:
 
 	void setEmplacement(Emplacement* emplacement)
 	{
+		if (_emplacement != nullptr) {
+			_emplacement->removeNoeud();
+		}
 		_emplacement = emplacement;
 		emplacement->setNoeud(this);
+	}
+
+	void clearEmplacement() {
+		if (_emplacement != nullptr) {
+			_emplacement->removeNoeud();
+		}
+		_emplacement = nullptr;
 	}
 
 };
