@@ -7,6 +7,7 @@
 #include "intersection.hpp"
 #include "emplacement.hpp"
 #include "utilitaire.hpp"
+#include <iostream>
 
 class Graphe {
 public:
@@ -64,11 +65,18 @@ public:
 		}
 	}
 
-	int getNbCroisement()
+	long getNbCroisement()
 	{
-		int total = 0;
+		long total = 0;
 		for (int i = 0; i < _liens.size(); ++i)
 		{
+			for (int noeud = 0; noeud < _noeuds.size(); ++noeud)
+			{
+				if (seTraverse(_liens[i], noeud))
+				{
+					total += INT_MAX;
+				}
+			}
 			for (int j = 0; i < _liens.size(); ++j)
 			{
 				if (i != j)
@@ -86,7 +94,6 @@ public:
 		}
 		return total;
 	}
-
 
 };
 

@@ -55,14 +55,39 @@ bool seCroisent(int px, int py, int qx, int qy, int rx, int ry, int sx, int sy) 
 	return true;
 }
 
-bool seCroisent(Point p, Point q, Point r, Point s)
+bool seCroisent(const Point &p, const Point &q, const Point &r, const Point &s)
 {
 	return seCroisent(p.getX(), p.getY(), q.getX(), q.getY(), r.getX(), r.getY(), s.getX(), s.getY());
 }
 
-bool seCroisent(Lien lien1, Lien lien2)
+bool seCroisent(const Lien &lien1, const Lien &lien2)
 {
 	return seCroisent(lien1.getNoeud1()->getEmplacement()->getPosition(), lien1.getNoeud2()->getEmplacement()->getPosition(), lien2.getNoeud1()->getEmplacement()->getPosition(), lien2.getNoeud2()->getEmplacement()->getPosition());
+}
+
+
+bool seTraverse(const Lien  &lien, const Noeud &noeud)
+{
+	Point p1 = lien.getNoeud1()->getPosition(), 
+		p2 = lien.getNoeud2()->getPosition(), 
+		p3 = noeud.getPosition();
+
+	return sontAlignes(p1, p2, p3);
+}
+
+bool sontAlignes(const Point &p1, const Point &p2, const Point &p3)
+{
+	return calculNormalisation(p1, p3) == calculNormalisation(p1, p2) 
+		&& calculNormalisation(p2, p3) == calculNormalisation(p1, p2);
+	//Seconde ligne nécessaire ?
+}
+
+//Pas sur du nom
+double calculNormalisation(const Point &p1, const Point &p2)
+{
+	double y1 = p1.getY(), y2 = p2.getY();
+	double x1 = p1.getX(), x2 = p2.getX();
+	return (y2 - y1) / (x2 - x1);
 }
 
 #endif

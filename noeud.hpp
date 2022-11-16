@@ -18,6 +18,7 @@ public:
 	Emplacement* getEmplacement()  const { return _emplacement; }
 	int getX()  const { return _emplacement->getX(); }
 	int getY()  const { return _emplacement->getY(); }
+	Point getPosition() const { return _emplacement->getPosition(); }
 	int getId() const { return _id; }
 
 	void setEmplacement(Emplacement* emplacement)
