@@ -36,9 +36,39 @@ bool dansRectangle(int sx,int sy,int tx,int ty,int cx,int cy) {
 	return (cx <= std::max(sx, tx) && cx >= std::min(sx, tx) && cy <= std::max(sy, ty) && cy >= std::min(sy, ty));
 }
 
+bool dansRectangle(const Point& corner1, const Point& corner2, const Point& point)
+{
+	return dansRectangle(corner1.getX(), corner1.getY(), 
+		corner2.getX(), corner2.getY(), point.getX(), point.getY());
+}
+
+bool dansRectangle(const Noeud &noeud1, const Noeud &noeud2, const Noeud &noeud)
+{
+	return dansRectangle(noeud1.getX(), noeud1.getY(),
+		noeud2.getX(), noeud2.getY(), noeud.getX(), noeud.getY());
+}
+
+bool dansRectangle(const Aretes &aretes, const Noeud &noeud)
+{
+	return dansRectangle(aretes.getNoeud1()->getPosition(), 
+		aretes.getNoeud2()->getPosition(), noeud.getPosition());
+}
+
 // Renvoie vrai si c est sur le segment st
 bool surSegment(int sx, int sy, int tx, int ty, int cx, int cy) {
 	return (dansRectangle(sx, sy, tx, ty, cx, cy) && (aGaucheInt(sx, sy, tx, ty, cx, cy) == 0));
 }
+
+bool surSegment(const Aretes& lien, const Noeud& noeud)
+{
+	return surSegment(lien.getNoeud1()->getPosition(),
+		lien.getNoeud2()->getPosition(), noeud.getPosition());
+}
+
+bool surSegment(const Point& s, const Point& t, const Point& c)
+{
+	return surSegment(s.getX(), s.getY(), t.getX(), t.getY(), c.getX(), c.getY());
+}
+
 
 #endif

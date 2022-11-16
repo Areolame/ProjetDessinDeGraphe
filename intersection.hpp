@@ -3,7 +3,7 @@
 
 #include "geometrie.hpp"
 #include "point.hpp"
-#include "lien.hpp"
+#include "aretes.hpp"
 #include <algorithm>
 
 using std::min;
@@ -60,20 +60,11 @@ bool seCroisent(const Point &p, const Point &q, const Point &r, const Point &s)
 	return seCroisent(p.getX(), p.getY(), q.getX(), q.getY(), r.getX(), r.getY(), s.getX(), s.getY());
 }
 
-bool seCroisent(const Lien &lien1, const Lien &lien2)
+bool seCroisent(const Aretes &aretes1, const Aretes &aretes2)
 {
-	return seCroisent(lien1.getNoeud1()->getEmplacement()->getPosition(), lien1.getNoeud2()->getEmplacement()->getPosition(), lien2.getNoeud1()->getEmplacement()->getPosition(), lien2.getNoeud2()->getEmplacement()->getPosition());
+	return seCroisent(aretes1.getNoeud1()->getEmplacement()->getPosition(), aretes1.getNoeud2()->getEmplacement()->getPosition(), aretes2.getNoeud1()->getEmplacement()->getPosition(), aretes2.getNoeud2()->getEmplacement()->getPosition());
 }
 
-
-bool seTraverse(const Lien  &lien, const Noeud &noeud)
-{
-	Point p1 = lien.getNoeud1()->getPosition(), 
-		p2 = lien.getNoeud2()->getPosition(), 
-		p3 = noeud.getPosition();
-
-	return sontAlignes(p1, p2, p3);
-}
 
 bool sontAlignes(const Point &p1, const Point &p2, const Point &p3)
 {

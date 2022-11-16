@@ -2,7 +2,7 @@
 #define GRAPHE_HPP
 
 #include <vector>
-#include "lien.hpp"
+#include "aretes.hpp"
 #include "point.hpp"
 #include "intersection.hpp"
 #include "emplacement.hpp"
@@ -12,9 +12,9 @@
 class Graphe {
 public:
 	std::vector<Emplacement> _emplacementsPossibles;
-	std::vector<Lien> _liens;
+	std::vector<Aretes> _liens;
 	std::vector<Noeud> _noeuds;
-	Graphe(std::vector<Lien> liens, std::vector<Emplacement> emplacementsPossibles) {
+	Graphe(std::vector<Aretes> liens, std::vector<Emplacement> emplacementsPossibles) {
 		_emplacementsPossibles = emplacementsPossibles;
 		_liens = liens;
 	}
@@ -72,7 +72,7 @@ public:
 		{
 			for (int noeud = 0; noeud < _noeuds.size(); ++noeud)
 			{
-				if (seTraverse(_liens[i], noeud))
+				if (surSegment(_liens[i], noeud))
 				{
 					total += INT_MAX;
 				}
@@ -81,10 +81,10 @@ public:
 			{
 				if (i != j)
 				{
-					Lien lien1 = _liens[i], lien2 = _liens[j];
-					if (!(lien1.contains(lien2.getNoeud1()) || lien1.contains(lien2.getNoeud2())))
+					Aretes aretes1 = _liens[i], aretes2 = _liens[j];
+					if (!(aretes1.contains(aretes2.getNoeud1()) || aretes1.contains(aretes2.getNoeud2())))
 					{
-						if (seCroisent(lien1, lien2))
+						if (seCroisent(aretes1, aretes2))
 						{
 							++total;
 						}

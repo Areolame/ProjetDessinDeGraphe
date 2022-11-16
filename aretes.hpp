@@ -1,12 +1,12 @@
-#ifndef LIEN_HPP
-#define LIEN_HPP
+#ifndef ARETES_HPP
+#define ARETES_HPP
 
 #include "noeud.hpp"
 
-class Lien {
+class Aretes {
 public:
 	Noeud* _noeud1, *_noeud2;
-	Lien(Noeud* noeud1, Noeud* noeud2) {
+	Aretes(Noeud* noeud1, Noeud* noeud2) {
 		_noeud1 = noeud1;
 		_noeud2 = noeud2;
 	}
