@@ -30,8 +30,8 @@ int main() {
 	gridHeight = 10;
 
 	G.placementAleatoire();
-	//G.afficherNoeuds();
-	//G.afficherLiens();
+	G.afficherNoeuds();
+	G.afficherLiens();
 
 	bool useOpenGL = true;
 	bool planarize = false;

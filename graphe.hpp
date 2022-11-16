@@ -12,7 +12,7 @@ class Graphe {
 public:
 	std::vector<Emplacement> _emplacementsPossibles;
 	std::vector<Lien> _liens;
-	std::vector<Noeud*> _noeuds;
+	std::vector<Noeud> _noeuds;
 	Graphe(std::vector<Lien> liens, std::vector<Emplacement> emplacementsPossibles) {
 		_emplacementsPossibles = emplacementsPossibles;
 		_liens = liens;
@@ -20,14 +20,6 @@ public:
 
 	Graphe()
 	{}
-
-	void setNoeuds(std::vector<Noeud*> noeuds){_noeuds = noeuds;}
-	void setLiens(std::vector<Lien> liens) { _liens = liens; }
-	void setEmplacementsPossibles(std::vector<Emplacement> emplacementsPossibles) { _emplacementsPossibles = emplacementsPossibles; }
-
-	std::vector<Noeud*> getNoeuds() const { return _noeuds; }
-	std::vector<Lien> getLiens()  const { return _liens; }
-	std::vector<Emplacement> getEmplacementsPossibles()  const { return _emplacementsPossibles; }
 
 	void afficherLiens() {
 		std::cout << "Nb Liens: " << _liens.size() << std::endl;
@@ -44,9 +36,9 @@ public:
 	void afficherNoeuds() {
 		std::cout << "Nb Noeuds: " << _noeuds.size() << std::endl;
 		for (int i = 0; i < _noeuds.size(); i++) {
-			if (_noeuds[i]->getEmplacement() == nullptr)
+			if (_noeuds[i].getEmplacement() == nullptr)
 				std::cout << "scream" << std::endl;
-			std::cout << "id: " << i << " x: " << _noeuds[i]->getX() << " y: " << _noeuds[i]->getY() << std::endl;
+			std::cout << "id: " << i << " x: " << _noeuds[i].getX() << " y: " << _noeuds[i].getY() << std::endl;
 		}
 	}
 
@@ -59,6 +51,7 @@ public:
 
 	void placementAleatoire()
 	{
+		std::cout << "taille: " << _noeuds.size() << std::endl;
 		for (int i = 0; i < _noeuds.size(); ++i)
 		{
 			int emplacementPossibleSize = _emplacementsPossibles.size();
@@ -67,7 +60,7 @@ public:
 			{
 				emplacement = &_emplacementsPossibles[generateRand(emplacementPossibleSize) - 1];
 			} while ( !emplacement->estDisponible());
-			_noeuds[i]->setEmplacement(emplacement);
+			_noeuds[i].setEmplacement(emplacement);
 		}
 	}
 
