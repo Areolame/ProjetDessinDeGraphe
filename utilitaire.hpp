@@ -2,7 +2,7 @@
 #define UTILIRAIRE_HPP
 
 #include <vector>
-#include "lien.hpp"
+#include "aretes.hpp"
 #include "point.hpp"
 #include "intersection.hpp"
 #include "emplacement.hpp"

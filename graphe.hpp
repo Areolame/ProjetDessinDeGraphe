@@ -60,7 +60,7 @@ public:
 			do
 			{
 				emplacement = &_emplacementsPossibles[generateRand(emplacementPossibleSize) - 1];
-			} while ( !emplacement->estDisponible());
+			} while (!emplacement->estDisponible());
 			_noeuds[i].setEmplacement(emplacement);
 		}
 	}
@@ -70,29 +70,72 @@ public:
 		long total = 0;
 		for (int i = 0; i < _liens.size(); ++i)
 		{
-			for (int noeud = 0; noeud < _noeuds.size(); ++noeud)
+			for (int j = i + 1; j < _liens.size(); ++j)
 			{
-				if (surSegment(_liens[i], noeud))
+				Aretes aretes1 = _liens[i], aretes2 = _liens[j];
+				if (!(aretes1.contains(aretes2.getNoeud1()) || aretes1.contains(aretes2.getNoeud2())))
 				{
-					total += INT_MAX;
-				}
-			}
-			for (int j = 0; i < _liens.size(); ++j)
-			{
-				if (i != j)
-				{
-					Aretes aretes1 = _liens[i], aretes2 = _liens[j];
-					if (!(aretes1.contains(aretes2.getNoeud1()) || aretes1.contains(aretes2.getNoeud2())))
+					if (seCroisent(aretes1, aretes2))
 					{
-						if (seCroisent(aretes1, aretes2))
+						++total;
+						if (surSegment(_liens[i], *_liens[j].getNoeud1())|| surSegment(_liens[i], *_liens[j].getNoeud2()))
 						{
-							++total;
+							total += INT_MAX;
 						}
+					}
+				}
+				else {
+					if (surSegment(_liens[i], *_liens[j].getNoeud1()) || surSegment(_liens[i], *_liens[j].getNoeud2()))
+					{
+						total += INT_MAX;
 					}
 				}
 			}
 		}
 		return total;
+	}
+
+	// Lance l'algorithme de recuit simulé sur le graphe pour minimiser le nombre d'intersection
+	void recuitSimule() {
+		double cool = 0.99999;
+		double t = 100;
+		int nbImprove = 0;
+		int nbSame = 0;
+		int nbWorst = 0;
+		long nbIntersection = getNbCroisement(); // Remplacer par la fonction qui calcule le score d'intersection
+		for (int iter = 0; (t > 0.0001) && (nbIntersection > 0); iter++) {
+			// Selection aléatoire du noeud
+			int randomId = generateRand(_noeuds.size() - 1);
+			// Selection aléatoire d'un emplacement disponible (pas tres équiprobable)
+			int randomEmpId = generateRand(_emplacementsPossibles.size() - 1);
+			while (!_emplacementsPossibles[randomEmpId].estDisponible()) {
+				randomEmpId = (randomEmpId + 1) % _emplacementsPossibles.size();
+			}
+			Emplacement* oldEmplacement = _noeuds[randomId].getEmplacement();
+			_noeuds[randomId].setEmplacement(&_emplacementsPossibles[randomEmpId]);
+			long newNbIntersection = getNbCroisement(); // Remplacer par la fonction qui calcule le score d'intersection
+			// improve < 0 = amélioration, improve > 0 = moin bien, improve = 0 = pareil
+			int improve = newNbIntersection - nbIntersection;
+			if (improve < 0) {
+				nbIntersection = newNbIntersection;
+				nbImprove++;
+			}
+			else {
+				double randDouble = generateDoubleRand(1.0);
+				if (randDouble < exp(-improve / t)) {
+					if (improve == 0) {
+						nbSame++;
+					}
+					else {
+						nbWorst++;
+					}
+				}
+				else {
+					_noeuds[randomId].setEmplacement(oldEmplacement);
+				}
+			}
+			t *= cool;
+		}
 	}
 
 };

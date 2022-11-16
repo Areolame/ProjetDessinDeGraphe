@@ -65,20 +65,19 @@ bool seCroisent(const Aretes &aretes1, const Aretes &aretes2)
 	return seCroisent(aretes1.getNoeud1()->getEmplacement()->getPosition(), aretes1.getNoeud2()->getEmplacement()->getPosition(), aretes2.getNoeud1()->getEmplacement()->getPosition(), aretes2.getNoeud2()->getEmplacement()->getPosition());
 }
 
-
-bool sontAlignes(const Point &p1, const Point &p2, const Point &p3)
-{
-	return calculNormalisation(p1, p3) == calculNormalisation(p1, p2) 
-		&& calculNormalisation(p2, p3) == calculNormalisation(p1, p2);
-	//Seconde ligne nécessaire ?
-}
-
 //Pas sur du nom
 double calculNormalisation(const Point &p1, const Point &p2)
 {
 	double y1 = p1.getY(), y2 = p2.getY();
 	double x1 = p1.getX(), x2 = p2.getX();
 	return (y2 - y1) / (x2 - x1);
+}
+
+bool sontAlignes(const Point& p1, const Point& p2, const Point& p3)
+{
+	return calculNormalisation(p1, p3) == calculNormalisation(p1, p2)
+		&& calculNormalisation(p2, p3) == calculNormalisation(p1, p2);
+	//Seconde ligne nécessaire ?
 }
 
 #endif

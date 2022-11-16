@@ -30,7 +30,7 @@ void readFromJsonGraph(Graphe& G, string input) {
 	for (int i = 0; i < edgeNumber; i++) {
 		id1 = j["edges"][i]["source"];
 		id2 = j["edges"][i]["target"];
-		G._liens.push_back(Lien(&G._noeuds[id1], &G._noeuds[id2]));
+		G._liens.push_back(Aretes(&G._noeuds[id1], &G._noeuds[id2]));
 	}
 }
 

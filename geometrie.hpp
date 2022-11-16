@@ -59,15 +59,15 @@ bool surSegment(int sx, int sy, int tx, int ty, int cx, int cy) {
 	return (dansRectangle(sx, sy, tx, ty, cx, cy) && (aGaucheInt(sx, sy, tx, ty, cx, cy) == 0));
 }
 
+bool surSegment(const Point& s, const Point& t, const Point& c)
+{
+	return surSegment(s.getX(), s.getY(), t.getX(), t.getY(), c.getX(), c.getY());
+}
+
 bool surSegment(const Aretes& lien, const Noeud& noeud)
 {
 	return surSegment(lien.getNoeud1()->getPosition(),
 		lien.getNoeud2()->getPosition(), noeud.getPosition());
-}
-
-bool surSegment(const Point& s, const Point& t, const Point& c)
-{
-	return surSegment(s.getX(), s.getY(), t.getX(), t.getY(), c.getX(), c.getY());
 }
 
 
