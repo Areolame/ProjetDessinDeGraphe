@@ -299,7 +299,7 @@ public:
 	{
 		Point centreGravite = getCentreGravite();
 		Emplacement *depart = getEmplacementPlusProche(centreGravite);
-		vector<int> nbAretesParNoeud(_noeuds.size(), 0);
+		std::vector<int> nbAretesParNoeud(_noeuds.size(), 0);
 
 		//Creation d'un tableau de noeuds avec leur nb d'utilisation
 		for (int i = 0; i < _liens.size(); ++i)
@@ -312,7 +312,8 @@ public:
 		int idNoeudPlusUtilise = nbAretesParNoeud[0];
 		for (int i = 1; i < nbAretesParNoeud.size(); ++i)
 		{
-			if (nbAretesParNoeud[idNoeudPlusUtilise] < nbAretesParNoeud[i])
+			if (_noeuds[i].estPlace() && 
+				nbAretesParNoeud[idNoeudPlusUtilise] < nbAretesParNoeud[i])
 			{
 				idNoeudPlusUtilise = i;
 			}
@@ -333,7 +334,8 @@ public:
 			if (_liens[i].contains(noeudDepart))
 			{
 				int idSecondNoeud = _liens[i].getAutreNoeud(noeudDepart)->getId();
-				if (nbAretesParNoeud[idSecondMeilleurNoeud] >
+				if (_noeuds[i].estPlace() && 
+					nbAretesParNoeud[idSecondMeilleurNoeud] > 
 					nbAretesParNoeud[idSecondNoeud])
 				{
 					idSecondMeilleurNoeud = idSecondNoeud;

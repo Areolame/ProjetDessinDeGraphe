@@ -15,6 +15,7 @@ public:
 		_id = id;
 	}
 
+	bool estPlace() const { return _emplacement != nullptr; }
 	Emplacement* getEmplacement()  const { return _emplacement; }
 	int getX()  const { return _emplacement->getX(); }
 	int getY()  const { return _emplacement->getY(); }
