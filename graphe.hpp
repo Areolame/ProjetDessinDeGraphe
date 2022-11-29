@@ -312,7 +312,7 @@ public:
 		int idNoeudPlusUtilise = nbAretesParNoeud[0];
 		for (int i = 1; i < nbAretesParNoeud.size(); ++i)
 		{
-			if (_noeuds[i].estPlace() && 
+			if (!_noeuds[i].estPlace() && 
 				nbAretesParNoeud[idNoeudPlusUtilise] < nbAretesParNoeud[i])
 			{
 				idNoeudPlusUtilise = i;
@@ -325,7 +325,7 @@ public:
 
 		//Cherche dans les liens du noeud le plus utilise parmis eux
 		int idSecondMeilleurNoeud = 0;
-		while(idSecondMeilleurNoeud == idNoeudPlusUtilise)
+		while(idSecondMeilleurNoeud)
 		{
 			++idSecondMeilleurNoeud;
 		}
@@ -334,7 +334,7 @@ public:
 			if (_liens[i].contains(noeudDepart))
 			{
 				int idSecondNoeud = _liens[i].getAutreNoeud(noeudDepart)->getId();
-				if (_noeuds[i].estPlace() && 
+				if (!_noeuds[i].estPlace() && 
 					nbAretesParNoeud[idSecondMeilleurNoeud] > 
 					nbAretesParNoeud[idSecondNoeud])
 				{
