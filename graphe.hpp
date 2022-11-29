@@ -25,31 +25,53 @@ public:
 	{}
 
 	void afficherLiens() {
-		std::cout << "Nb Liens: " << _liens.size() << std::endl;
+		std::cout << "-----------------------------------------------" << std::endl;
+		std::cout << "Affichage DEBUG Aretes:" << std::endl;
+		std::cout << "Nb Aretes: " << _liens.size() << std::endl;
 		for (int i = 0; i < _liens.size(); i++) {
 			if (_liens[i].getNoeud1() == nullptr || _liens[i].getNoeud2() == nullptr)
 				std::cout << "scream" << std::endl;
 			if (_liens[i].getNoeud1()->getEmplacement() == nullptr || _liens[i].getNoeud2()->getEmplacement() == nullptr)
 				std::cout << "scream2" << std::endl;
-			std::cout << "id: " << i << " x: " << _liens[i].getNoeud1()->getX() << " y: " << _liens[i].getNoeud1()->getY() << std::endl;
-			std::cout << "id: " << i << " x: " << _liens[i].getNoeud1()->getX() << " y: " << _liens[i].getNoeud1()->getY() << std::endl;
+			std::cout << "id: " << i << " idnode1: " << _liens[i].getNoeud1()->getId() << " idnode2: " << _liens[i].getNoeud2()->getId();
+			std::cout << " x1: " << _liens[i].getNoeud1()->getX() << " y1: " << _liens[i].getNoeud1()->getY();
+			std::cout << " x2: " << _liens[i].getNoeud2()->getX() << " y2: " << _liens[i].getNoeud2()->getY() << std::endl;
 		}
+		std::cout << "-----------------------------------------------" << std::endl;
 	}
 
 	void afficherNoeuds() {
+		std::cout << "-----------------------------------------------" << std::endl;
+		std::cout << "Affichage DEBUG Noeuds:" << std::endl;
 		std::cout << "Nb Noeuds: " << _noeuds.size() << std::endl;
 		for (int i = 0; i < _noeuds.size(); i++) {
 			if (_noeuds[i].getEmplacement() == nullptr)
 				std::cout << "scream" << std::endl;
-			std::cout << "id: " << i << " x: " << _noeuds[i].getX() << " y: " << _noeuds[i].getY() << std::endl;
+			std::cout << "id: " << _noeuds[i].getId() << " x: " << _noeuds[i].getX() << " y: " << _noeuds[i].getY() << " empid: ";
+			if (_noeuds[i].getEmplacement() == nullptr) {
+				std::cout << " aucun" << std::endl;
+			}
+			else {
+				std::cout << _noeuds[i].getEmplacement()->_id << std::endl;
+			}
 		}
+		std::cout << "-----------------------------------------------" << std::endl;
 	}
 
 	void afficherEmplacement() {
+		std::cout << "-----------------------------------------------" << std::endl;
+		std::cout << "Affichage DEBUG Emplacements:" << std::endl;
 		std::cout << "Nb Emplacements: " << _emplacementsPossibles.size() << std::endl;
 		for (int i = 0; i < _emplacementsPossibles.size(); i++) {
-			std::cout << "id: " << i << " x: " << _emplacementsPossibles[i].getX() << " y: " << _emplacementsPossibles[i].getY() << std::endl;
+			std::cout << "id: " << _emplacementsPossibles[i]._id << " x: " << _emplacementsPossibles[i].getX() << " y: " << _emplacementsPossibles[i].getY() << " idnode: ";
+			if (_emplacementsPossibles[i]._noeud == nullptr) {
+				std::cout << "aucun: " << _emplacementsPossibles[i].estDisponible() << std::endl;
+			}
+			else {
+				std::cout << _emplacementsPossibles[i]._noeud->getId() << std::endl;
+			}
 		}
+		std::cout << "-----------------------------------------------" << std::endl;
 	}
 
 	void clearNodeEmplacement() {

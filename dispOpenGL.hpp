@@ -14,6 +14,8 @@ bool make_copy = false;
 bool apply_copy = false;
 bool show_grid_size = true;
 bool startRecuit = false;
+bool affiche_score = false;
+bool test_moyenne = false;
 bool randomReset = false;
 bool gloutonReset = false;
 int currentZoom = 0;
@@ -63,6 +65,15 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		case GLFW_KEY_2:
 			gloutonReset = true;
 			break;
+		case GLFW_KEY_3:
+			startRecuit = true;
+			break;
+		case GLFW_KEY_4:
+			affiche_score = true;
+			break;
+		case GLFW_KEY_5:
+			test_moyenne = true;
+			break;
 		case GLFW_KEY_KP_1:
 			startRecuit = true;
 			break;
@@ -85,7 +96,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		}
 }
 
-void dispOpenGL(Graphe& G, const int gridWidth, const int gridHeight, int maxX, int maxY, string nom_graphe) {
+void dispOpenGL(Graphe& G, const int gridWidth, const int gridHeight, int maxX, int maxY) {
 
 	// Chrono pour le temps d'exec, utilisé pour le stockage de donnée pour la création de graphiques, a supprimer lors de vrai tests
 	auto start = std::chrono::system_clock::now();
@@ -162,6 +173,25 @@ void dispOpenGL(Graphe& G, const int gridWidth, const int gridHeight, int maxX, 
 			G.clearNodeEmplacement();
 			G.glouton();
 			gloutonReset = false;
+		}
+		else if (affiche_score) {
+			std::cout << G.getNbCroisement() << std::endl;
+			affiche_score = false;
+		}
+		else if (test_moyenne) {
+			int nb_essai = 1000;
+			int somme1 = 0;
+			int somme2 = 0;
+			for (int i = 0; i < nb_essai; i++) {
+				G.clearNodeEmplacement();
+				G.placementAleatoire();
+				somme1 += G.getNbCroisement();
+				G.clearNodeEmplacement();
+				G.glouton();
+				somme2 += G.getNbCroisement();
+			}
+			std::cout << "Aleatoire: " << somme1 << " Glouton: " << somme2 << std::endl;
+			test_moyenne = false;
 		}
 		// affichage de la grille avec une marge de 1
 		glColor3f(0.0f, 1.0f, 0.0f);

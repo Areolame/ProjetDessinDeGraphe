@@ -16,23 +16,35 @@ int main() {
 	int gridWidth, gridHeight;
 
 	// ----- LECTURE D'UN FICHIER JSON DANS UN Graph -----
-	string nomFichierGraph = "graph_exemple1";
-	string nomFichierSlots = "slot_exemple1";
-	string fileGraph = "D:/The World/Cours/M2S1/ProjetDessinGraphe/GitHub/ProjetDessinDeGraphe/exemple/Graphe/" + nomFichierGraph + ".json";
-	string fileSlots = "D:/The World/Cours/M2S1/ProjetDessinGraphe/GitHub/ProjetDessinDeGraphe/exemple/Slots/" + nomFichierSlots + ".json";
 
 	Graphe G;
 
-	readFromJsonGraph(G, fileGraph);
-	readFromJsonSlots(G, fileSlots, gridWidth, gridHeight);
+	int lecture = 1;
+
+	if (lecture == 0) {
+		string nomFichierGraph = "graph_exemple1";
+		string nomFichierSlots = "slot_exemple1";
+		string fileGraph = "D:/The World/Cours/M2S1/ProjetDessinGraphe/GitHub/ProjetDessinDeGraphe/exemple/Graphe/" + nomFichierGraph + ".json";
+		string fileSlots = "D:/The World/Cours/M2S1/ProjetDessinGraphe/GitHub/ProjetDessinDeGraphe/exemple/Slots/" + nomFichierSlots + ".json";
+		readFromJsonGraph(G, fileGraph);
+		readFromJsonSlots(G, fileSlots, gridWidth, gridHeight);
+	}
+	// Fichiers 2022
+	else if (lecture == 1) {
+		string nomFichierGraph = "auto21-1";
+		string nomFichier = "D:/The World/Cours/M2S1/ProjetDessinGraphe/GitHub/ProjetDessinDeGraphe/automatique/" + nomFichierGraph + ".json";
+		readFromJsonOldGraph(nomFichier, G, gridWidth, gridHeight);
+	}
+
 	std::cout << "Grid: " << gridWidth << " " << gridHeight << std::endl;
 	gridWidth = 10;
 	gridHeight = 10;
 
-	//G.placementAleatoire();
-	G.glouton();
-	//G.afficherNoeuds();
-	//G.afficherLiens();
+	G.placementAleatoire();
+	//G.glouton();
+	G.afficherNoeuds();
+	G.afficherEmplacement();
+	G.afficherLiens();
 
 	bool useOpenGL = true;
 	bool planarize = false;
@@ -44,7 +56,7 @@ int main() {
 	// OpenGL
 	srand(static_cast<unsigned int>(time(NULL)));
 	if (useOpenGL) {
-		dispOpenGL(G, gridWidth, gridHeight, maxX, maxY, nomFichierGraph);
+		dispOpenGL(G, gridWidth, gridHeight, maxX, maxY);
 	}
 	return 0;
 }
