@@ -16,6 +16,14 @@ public:
 		if (number == 1) return *_noeud1;
 		return *_noeud2;
 	}
+
+	// A APPELER UNIQUEMENT SI LE LIEN A LE NOEUD EN PARAMETRE RENVOIE NULLPTR SINON
+	Noeud* getAutreNoeud(Noeud* noeud)
+	{
+		if (_noeud1->getId() == noeud->getId()) return _noeud2;
+		else if (_noeud2->getId() == noeud->getId()) return _noeud1;
+		return nullptr;
+	}
 	Noeud* getNoeud1()  const { return _noeud1; }
 	Noeud* getNoeud2()  const { return _noeud2; }
 

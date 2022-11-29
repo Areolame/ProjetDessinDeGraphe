@@ -17,6 +17,7 @@ public:
 		_id = id;
 	}
 
+	int getId() const { return _id; }
 	Point getPosition() const { return _position; }
 	int getX() const { return _position.getX(); }
 	int getY() const { return _position.getY(); }

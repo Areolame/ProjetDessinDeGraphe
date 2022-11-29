@@ -14,9 +14,11 @@ public:
 	std::vector<Emplacement> _emplacementsPossibles;
 	std::vector<Aretes> _liens;
 	std::vector<Noeud> _noeuds;
+	int PENALITE_MAX;
 	Graphe(std::vector<Aretes> liens, std::vector<Emplacement> emplacementsPossibles) {
 		_emplacementsPossibles = emplacementsPossibles;
 		_liens = liens;
+		PENALITE_MAX = _liens.size() * 10;
 	}
 
 	Graphe()
@@ -78,13 +80,14 @@ public:
 			for (int j = i + 1; j < _liens.size(); ++j)
 			{
 				//Aretes aretes1 = _liens[i], aretes2 = _liens[j];
-				if (!(_liens[i].contains(_liens[j].getNoeud1()) || _liens[i].contains(_liens[j].getNoeud2())))
+				if (!(_liens[i].contains(_liens[j].getNoeud1()) 
+					|| _liens[i].contains(_liens[j].getNoeud2())))
 				{
 					if (seCroisent(_liens[i], _liens[j]))
 					{
 						if (surSegment(_liens[i], *_liens[j].getNoeud1())|| surSegment(_liens[i], *_liens[j].getNoeud2()))
 						{
-							total += 1000;
+							total += PENALITE_MAX;
 						}
 						else {
 							++total;
@@ -95,13 +98,14 @@ public:
 					Noeud* nodeNotInCommon = _liens[j].nodeNotInCommon(_liens[i]);
 					if (surSegment(_liens[i], *nodeNotInCommon))
 					{
-						total += 1000;
+						total += PENALITE_MAX;
 					}
 				}
 			}
 		}
 		return total;
 	}
+
 
 	long getNbCroisementGlouton()
 	{
@@ -114,13 +118,15 @@ public:
 				{
 					if (_liens[j].estPlace()) {
 						//Aretes aretes1 = _liens[i], aretes2 = _liens[j];
-						if (!(_liens[i].contains(_liens[j].getNoeud1()) || _liens[i].contains(_liens[j].getNoeud2())))
+						if (!(_liens[i].contains(_liens[j].getNoeud1())
+							|| _liens[i].contains(_liens[j].getNoeud2())))
 						{
 							if (seCroisent(_liens[i], _liens[j]))
 							{
-								if (surSegment(_liens[i], *_liens[j].getNoeud1()) || surSegment(_liens[i], *_liens[j].getNoeud2()))
+								if (surSegment(_liens[i], *_liens[j].getNoeud1())
+									|| surSegment(_liens[i], *_liens[j].getNoeud2()))
 								{
-									total += 1000;
+									total += PENALITE_MAX;
 								}
 								else {
 									++total;
@@ -131,7 +137,7 @@ public:
 							Noeud* nodeNotInCommon = _liens[j].nodeNotInCommon(_liens[i]);
 							if (surSegment(_liens[i], *nodeNotInCommon))
 							{
-								total += 1000;
+								total += PENALITE_MAX;
 							}
 						}
 					}
@@ -185,6 +191,58 @@ public:
 		}
 	}
 
+
+	Emplacement* getEmplacementPlusProche(const Point& origin)
+	{
+		Emplacement meilleurEmplacement = _emplacementsPossibles[0];
+		int meilleurDistance = meilleurEmplacement.getPosition().distance(origin);
+		for (int i = 1; i < _emplacementsPossibles.size(); ++i)
+		{
+			int distanceActuel = _emplacementsPossibles[i].getPosition().distance(origin);
+			if (meilleurDistance > distanceActuel)
+			{
+				meilleurEmplacement = _emplacementsPossibles[i];
+				meilleurDistance = distanceActuel;
+			}
+		}
+
+		return &meilleurEmplacement;
+	}
+
+	Emplacement* getEmplacementPlusProche(Emplacement* origin)
+	{
+		Emplacement meilleurEmplacement = _emplacementsPossibles[0];
+		int meilleurDistance = meilleurEmplacement.getPosition()
+			.distance(origin->getPosition());
+		for (int i = 1; i < _emplacementsPossibles.size(); ++i)
+		{
+			int distanceActuel = _emplacementsPossibles[i].getPosition()
+				.distance(origin->getPosition());
+			if (origin->getId() != _emplacementsPossibles[i].getId() && meilleurDistance > distanceActuel)
+			{
+				meilleurEmplacement = _emplacementsPossibles[i];
+				meilleurDistance = distanceActuel;
+			}
+		}
+
+		return &meilleurEmplacement;
+	}
+
+	Point getCentreGravite()
+	{
+		double totalX = 0.0, totalY = 0.0;
+		for (Emplacement emplacement : _emplacementsPossibles)
+		{
+			totalX += emplacement.getX();
+			totalY += emplacement.getY();
+		}
+
+		return Point(
+			totalX / _emplacementsPossibles.size(),
+			totalY / _emplacementsPossibles.size()
+		);
+	}
+
 	void glouton() {
 		for (int i = 0; i < _noeuds.size(); i++) {
 			// Selection aléatoire du noeud
@@ -215,6 +273,61 @@ public:
 			_noeuds[randomId].setEmplacement(&_emplacementsPossibles[bestId]);
 		}
 	}
+	void gloutonRevisite() 
+	{
+		Point centreGravite = getCentreGravite();
+		Emplacement *depart = getEmplacementPlusProche(centreGravite);
+		vector<int> nbAretesParNoeud(_noeuds.size(), 0);
+
+		//Creation d'un tableau de noeuds avec leur nb d'utilisation
+		for (int i = 0; i < _liens.size(); ++i)
+		{
+			++nbAretesParNoeud[_liens[i].getNoeud1()->getId()];
+			++nbAretesParNoeud[_liens[i].getNoeud2()->getId()];
+		}
+
+		//Trouve le noeud le plus utilise du graphe
+		int idNoeudPlusUtilise = nbAretesParNoeud[0];
+		for (int i = 1; i < nbAretesParNoeud.size(); ++i)
+		{
+			if (nbAretesParNoeud[idNoeudPlusUtilise] < nbAretesParNoeud[i])
+			{
+				idNoeudPlusUtilise = i;
+			}
+		}
+
+		Noeud* noeudDepart = &_noeuds[idNoeudPlusUtilise];
+
+		depart->setNoeud(noeudDepart);
+
+		//Cherche dans les liens du noeud le plus utilise parmis eux
+		int idSecondMeilleurNoeud = 0;
+		while(idSecondMeilleurNoeud == idNoeudPlusUtilise)
+		{
+			++idSecondMeilleurNoeud;
+		}
+		for (int i = 0; i < _liens.size(); ++i)
+		{
+			if (_liens[i].contains(noeudDepart))
+			{
+				int idSecondNoeud = _liens[i].getAutreNoeud(noeudDepart)->getId();
+				if (nbAretesParNoeud[idSecondMeilleurNoeud] >
+					nbAretesParNoeud[idSecondNoeud])
+				{
+					idSecondMeilleurNoeud = idSecondNoeud;
+				}
+			}
+		}
+
+		Emplacement* emplacementProche = getEmplacementPlusProche(depart);
+
+		emplacementProche->setNoeud(&_noeuds[idSecondMeilleurNoeud]);
+
+		
+
+
+	}
+
 
 };
 
