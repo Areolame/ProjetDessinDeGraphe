@@ -82,7 +82,6 @@ public:
 
 	void placementAleatoire()
 	{
-		std::cout << "taille: " << _noeuds.size() << std::endl;
 		for (int i = 0; i < _noeuds.size(); ++i)
 		{
 			int emplacementId = generateRand(_emplacementsPossibles.size()) - 1;
@@ -240,19 +239,19 @@ public:
 
 	Emplacement* getEmplacementPlusProche(const Point& origin)
 	{
-		Emplacement meilleurEmplacement = _emplacementsPossibles[0];
-		int meilleurDistance = meilleurEmplacement.getPosition().distance(origin);
+		Emplacement* meilleurEmplacement = &_emplacementsPossibles[0];
+		int meilleurDistance = meilleurEmplacement->getPosition().distance(origin);
 		for (int i = 1; i < _emplacementsPossibles.size(); ++i)
 		{
 			int distanceActuel = _emplacementsPossibles[i].getPosition().distance(origin);
 			if (meilleurDistance > distanceActuel)
 			{
-				meilleurEmplacement = _emplacementsPossibles[i];
+				meilleurEmplacement = &_emplacementsPossibles[i];
 				meilleurDistance = distanceActuel;
 			}
 		}
 
-		return &meilleurEmplacement;
+		return meilleurEmplacement;
 	}
 
 	Emplacement* getEmplacementPlusProche(Emplacement* origin)
@@ -367,38 +366,42 @@ public:
 
 		while (!estPlace())
 		{
-			int meilleurVoisinPlace = 0;
-			Noeud* meilleurVoisin = nullptr;
+			Noeud* meilleurNoeud = nullptr;
+			nbRencontre = 0;
 			for (int i = 0; i < _noeuds.size(); ++i)
 			{
 				if (!_noeuds[i].estPlace())
 				{
-					int nbVoisinPlace = 0;
-					//Compte le nombre de voisin placés
-					for (int j = 0; j < _noeuds[i].getVoisins().size(); ++j)
+					Noeud* currentVoisin = &_noeuds[i];
+					if (meilleurNoeud == nullptr)
 					{
-						if (_noeuds[i].getVoisins()[j]->getEmplacement() != nullptr)
-						{
-							++nbVoisinPlace;
-						}
+						meilleurNoeud = currentVoisin;
 					}
-
-					if (nbVoisinPlace > meilleurVoisinPlace)
+					else if (meilleurNoeud->getVoisins().size() < currentVoisin->getVoisins().size())
 					{
-						nbVoisinPlace = meilleurVoisinPlace;
-						meilleurVoisin = &_noeuds[i];
+						meilleurNoeud = currentVoisin;
+						nbRencontre = 0;
+					}
+					else if (meilleurNoeud->getVoisins().size() == currentVoisin->getVoisins().size())
+					{
+						++nbRencontre;
+						int aleatoire = generateRand(nbRencontre);
+						if (aleatoire == 1)
+						{
+							meilleurNoeud = currentVoisin;
+						}
 					}
 				}
 
 			}
 
-			if (meilleurVoisin != nullptr)
+			if (meilleurNoeud != nullptr)
 			{
 				int randomEmpId = generateRand(_emplacementsPossibles.size() - 1);
 				while (!_emplacementsPossibles[randomEmpId].estDisponible()) {
 					randomEmpId = (randomEmpId + 1) % _emplacementsPossibles.size();
 				}
-				meilleurVoisin->setEmplacement(&_emplacementsPossibles[randomEmpId]);
+				meilleurNoeud->setEmplacement(&_emplacementsPossibles[randomEmpId]);
 				long bestScore = getNbCroisementGlouton();
 				int bestId = randomEmpId;
 				int index = (randomEmpId + 1) % _emplacementsPossibles.size();
@@ -406,14 +409,24 @@ public:
 					while (!_emplacementsPossibles[index].estDisponible()) {
 						index = (index + 1) % _emplacementsPossibles.size();
 					}
-					meilleurVoisin->setEmplacement(&_emplacementsPossibles[index]);
+					meilleurNoeud->setEmplacement(&_emplacementsPossibles[index]);
 					long newScore = getNbCroisementGlouton();
 					if (newScore < bestScore) {
 						bestScore = newScore;
 						bestId = index;
 					}
+					else if (newScore == bestScore)
+					{
+						++nbRencontre;
+						int aleatoire = generateRand(nbRencontre);
+						if (aleatoire == 1)
+						{
+							bestScore = newScore;
+							bestId = index;
+						}
+					}
 				}
-				meilleurVoisin->setEmplacement(&_emplacementsPossibles[bestId]);
+				meilleurNoeud->setEmplacement(&_emplacementsPossibles[bestId]);
 			}
 
 		}
@@ -430,7 +443,28 @@ public:
 		return true;
 	}
 
+	std::vector<int> saveCopy() {
+		std::vector<int> vectorId;
+		for (int i = 0; i < _noeuds.size(); i++) {
+			vectorId.push_back(_noeuds[i].getEmplacement()->getId());
+		}
+		return vectorId;
+	}
 
+	void loadCopy(std::vector<int> vectorId) {
+		for (int i = 0; i < _noeuds.size(); i++) {
+			_noeuds[i].clearEmplacement();
+		}
+		for (int i = 0; i < _noeuds.size(); i++) {
+			_noeuds[i].setEmplacement(&_emplacementsPossibles[vectorId[i]]);
+		}
+	}
+
+	void clearGraphe() {
+		_noeuds.clear();
+		_emplacementsPossibles.clear();
+		_liens.clear();
+	}
 };
 
 #endif
