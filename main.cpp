@@ -19,13 +19,13 @@ int main() {
 
 	Graphe G;
 
-	int lecture = 1;
+	int lecture = 0;
 
 	if (lecture == 0) {
 		string nomFichierGraph = "graph_exemple1";
 		string nomFichierSlots = "slot_exemple1";
-		string fileGraph = "D:/The World/Cours/M2S1/ProjetDessinGraphe/GitHub/ProjetDessinDeGraphe/exemple/Graphe/" + nomFichierGraph + ".json";
-		string fileSlots = "D:/The World/Cours/M2S1/ProjetDessinGraphe/GitHub/ProjetDessinDeGraphe/exemple/Slots/" + nomFichierSlots + ".json";
+		string fileGraph = "C:/Users/Lenovo Yoga 700/source/repos/ConsoleApplicationOpenGL/ConsoleApplicationOpenGL/exemple/Graphe/" + nomFichierGraph + ".json";
+		string fileSlots = "C:/Users/Lenovo Yoga 700/source/repos/ConsoleApplicationOpenGL/ConsoleApplicationOpenGL/exemple/Slots/" + nomFichierSlots + ".json";
 		readFromJsonGraph(G, fileGraph);
 		readFromJsonSlots(G, fileSlots, gridWidth, gridHeight);
 	}
@@ -37,11 +37,13 @@ int main() {
 	}
 
 	std::cout << "Grid: " << gridWidth << " " << gridHeight << std::endl;
+	
 	gridWidth = 10;
 	gridHeight = 10;
 
-	G.placementAleatoire();
+	//G.placementAleatoire();
 	//G.glouton();
+	G.gloutonRevisite();
 	G.afficherNoeuds();
 	G.afficherEmplacement();
 	G.afficherLiens();

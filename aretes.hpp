@@ -9,6 +9,9 @@ public:
 	Aretes(Noeud* noeud1, Noeud* noeud2) {
 		_noeud1 = noeud1;
 		_noeud2 = noeud2;
+
+		noeud1->connect(noeud2);
+		noeud2->connect(noeud1);
 	}
 
 	Noeud getNoeud(int number)  const

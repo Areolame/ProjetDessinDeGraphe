@@ -7,6 +7,7 @@ class Noeud {
 public:
 	Emplacement* _emplacement = nullptr;
 	int _id;
+	std::vector<Noeud*> voisins;
 	Noeud(Emplacement* emplacement, int id) {
 		_emplacement = emplacement;
 		_id = id;
@@ -17,6 +18,15 @@ public:
 
 	bool estPlace() const { return _emplacement != nullptr; }
 	Emplacement* getEmplacement()  const { return _emplacement; }
+	void connect(Noeud* noeud) { voisins.push_back(noeud); };
+	std::vector<Noeud*> getVoisins() const { return voisins; }
+	bool voisinsSontPlaces() const {
+		for (Noeud* noeud : voisins)
+		{
+			if (!noeud->estPlace()) return false;
+		} 
+		return true;
+	}
 	int getX()  const { return _emplacement->getX(); }
 	int getY()  const { return _emplacement->getY(); }
 	Point getPosition() const { return _emplacement->getPosition(); }
