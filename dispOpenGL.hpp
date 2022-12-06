@@ -8,7 +8,6 @@
 #include "jsonIO.hpp"
 #include <random>
 
-bool move_manual = false;
 bool save_current = false;
 bool make_copy = false;
 bool apply_copy = false;
@@ -20,10 +19,17 @@ bool randomReset = false;
 bool gloutonReset = false;
 int currentZoom = 0;
 bool showAllEdges = false;
+bool show_nb_intersection = false;
+bool moving = false;
+bool move_current_left = false;
+bool move_current_right = false;
+int selectedNode = 0;
+bool show_selected_emplacement = false;
+int selectedEmplacement = 0;
+int maxNodeIndex = 0;
+int maxEmplacementIndex = 0;
+bool make_swap = false;
 std::vector<std::pair<int, int>> graphCopy;
-
-// Incrément de déplacement du selected node
-int dx, dy;
 
 void error_callback(int error, const char* description) {
 	fputs(description, stderr);
@@ -40,24 +46,42 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 			break;
 			// GAUCHE,DROITE,HAUT,BAS déplace le point sélectionné de 1 case dans la direction de la fleche
 		case GLFW_KEY_LEFT:
-			dx = -1;
-			dy = 0;
-			move_manual = true;
+			if (show_selected_emplacement) {
+				if (selectedEmplacement > 0) {
+					selectedEmplacement--;
+				}
+			}
+			else {
+				if (moving) {
+					move_current_left = true;
+				}
+				else {
+					if (selectedNode > 0) {
+						selectedNode--;
+					}
+				}
+			}
 			break;
 		case GLFW_KEY_RIGHT:
-			dx = 1;
-			dy = 0;
-			move_manual = true;
+			if (show_selected_emplacement) {
+				if (selectedEmplacement < maxEmplacementIndex) {
+					selectedEmplacement++;
+				}
+			}
+			else {
+				if (moving) {
+					move_current_right = true;
+				}
+				else {
+					if (selectedNode < maxNodeIndex) {
+						selectedNode++;
+					}
+				}
+			}
 			break;
 		case GLFW_KEY_DOWN:
-			dy = -1;
-			dx = 0;
-			move_manual = true;
 			break;
 		case GLFW_KEY_UP:
-			dy = 1;
-			dx = 0;
-			move_manual = true;
 			break;
 		case GLFW_KEY_1:
 			randomReset = true;
@@ -93,6 +117,19 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		case GLFW_KEY_KP_SUBTRACT:
 			currentZoom = currentZoom + 30;
 			break;
+		case GLFW_KEY_N:
+			show_nb_intersection = true;
+			break;
+		case GLFW_KEY_D:
+			moving = !moving;
+			break;
+		case GLFW_KEY_E:
+			show_selected_emplacement = !show_selected_emplacement;
+			break;
+		case GLFW_KEY_S:
+			if (show_selected_emplacement) {
+				make_swap = true;
+			}
 		}
 }
 
@@ -104,6 +141,8 @@ void dispOpenGL(Graphe& G, const int gridWidth, const int gridHeight, int maxX, 
 	// NB tour pour le stockage de donnée pour les graphiques, a supprimer lors de vrai executions
 	unsigned long long totalTurn = 0;
 	unsigned long long lastWrittenTurn = 0;
+	maxNodeIndex = G._noeuds.size() - 1;
+	maxEmplacementIndex = G._emplacementsPossibles.size() - 1;
 
 	//fin ogdf
 	if (!glfwInit())
@@ -137,14 +176,7 @@ void dispOpenGL(Graphe& G, const int gridWidth, const int gridHeight, int maxX, 
 		}
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		// Deplacer un noeud aléatoirement
-		if (move_manual) {
-			//move(vectorNodeBends[selectedNodeBendNum], GL, dx, dy, sommeLong, sommeLong2, variance);
-			dx = 0;
-			dy = 0;
-			move_manual = false;
-		}
-		else if (save_current) {
+		if (save_current) {
 			//writeToJson("currentSave.json", G, GL, gridWidth, gridHeight, maxBends);
 			std::cout << "Finished saving" << std::endl;
 			save_current = false;
@@ -175,7 +207,23 @@ void dispOpenGL(Graphe& G, const int gridWidth, const int gridHeight, int maxX, 
 			gloutonReset = false;
 		}
 		else if (affiche_score) {
-			std::cout << G.getNbCroisement() << std::endl;
+			std::cout << "Selected Node: " << selectedNode << " Selected Emplacement: " << selectedEmplacement << std::endl;
+			std::cout << "Nb Intersection: " << G.getNbCroisement() << std::endl;
+			std::cout << "Selected node score: " << G.getScoreCroisementNode(selectedNode) << std::endl;
+			if (show_selected_emplacement) {
+				if (!G._emplacementsPossibles[selectedEmplacement].estDisponible()) {
+					int swapId = G._emplacementsPossibles[selectedEmplacement]._noeud->getId();
+					std::cout << "Selected emplacement score: " << G.getScoreCroisementNode(swapId) << std::endl;
+					int score = G.getScoreCroisementNode(selectedNode);
+					score += G.getScoreCroisementNode(swapId, selectedNode);
+					std::cout << "Score before swap: " << score << std::endl;
+					G._noeuds[selectedNode].swap(G._noeuds[swapId].getEmplacement());
+					score = G.getScoreCroisementNode(selectedNode);
+					score += G.getScoreCroisementNode(swapId, selectedNode);
+					std::cout << "Score after swap: " << score << std::endl;
+					G._noeuds[selectedNode].swap(G._noeuds[swapId].getEmplacement());
+				}
+			}
 			affiche_score = false;
 		}
 		else if (test_moyenne) {
@@ -192,6 +240,43 @@ void dispOpenGL(Graphe& G, const int gridWidth, const int gridHeight, int maxX, 
 			}
 			std::cout << "Aleatoire: " << somme1 << " Glouton: " << somme2 << std::endl;
 			test_moyenne = false;
+		}
+		else if (show_nb_intersection) {
+			std::cout << "Nb Intersections: " << G.getNbCroisement() << std::endl;
+			show_nb_intersection = false;
+		}
+		else if (move_current_left) {
+			int numPos = G._noeuds[selectedNode].getEmplacement()->getId();
+			for (int i = numPos - 1; i >= 0; i--) {
+				if (G._emplacementsPossibles[i].estDisponible()) {
+					G._noeuds[selectedNode].setEmplacement(&G._emplacementsPossibles[i]);
+					break;
+				}
+			}
+			move_current_left = false;
+		}
+		else if (move_current_right) {
+			int numPos = G._noeuds[selectedNode].getEmplacement()->getId();
+			for (int i = numPos + 1; i < G._emplacementsPossibles.size(); i++) {
+				if (G._emplacementsPossibles[i].estDisponible()) {
+					G._noeuds[selectedNode].setEmplacement(&G._emplacementsPossibles[i]);
+					break;
+				}
+			}
+			move_current_right = false;
+		}
+		else if (make_swap) {
+			if (G._noeuds[selectedNode].getEmplacement()->getId() != selectedEmplacement) {
+				int oldEmplacement = G._noeuds[selectedNode].getEmplacement()->getId();
+				if (G._emplacementsPossibles[selectedEmplacement].estDisponible()) {
+					G._noeuds[selectedNode].setEmplacement(&G._emplacementsPossibles[selectedEmplacement]);
+				}
+				else {
+					G._noeuds[selectedNode].swap(&G._emplacementsPossibles[selectedEmplacement]);
+				}
+				selectedEmplacement = oldEmplacement;
+			}
+			make_swap = false;
 		}
 		// affichage de la grille avec une marge de 1
 		glColor3f(0.0f, 1.0f, 0.0f);
@@ -218,9 +303,19 @@ void dispOpenGL(Graphe& G, const int gridWidth, const int gridHeight, int maxX, 
 			glVertex2d(G._emplacementsPossibles[i].getX(), G._emplacementsPossibles[i].getY());
 		}
 		//afficher les nodes
-		glColor3f(1.0f, 0.0f, 0.0f);
 		for (int i = 0; i < G._noeuds.size(); i++) {
+			glColor3f(1.0f, 0.0f, 0.0f);
+			if (selectedNode == i) {
+				glColor3f(0.0f, 0.0f, 1.0f);
+				if (moving) {
+					glColor3f(0.0f, 0.5f, 0.0f);
+				}
+			}
 			glVertex2d(G._noeuds[i].getX(), G._noeuds[i].getY());
+		}
+		if (show_selected_emplacement) {
+			glColor3f(0.5f, 0.0f, 0.0f);
+			glVertex2d(G._emplacementsPossibles[selectedEmplacement].getX(), G._emplacementsPossibles[selectedEmplacement].getY());
 		}
 		glEnd();
 		glfwSwapBuffers(window);

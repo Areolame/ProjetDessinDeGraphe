@@ -6,27 +6,17 @@
 class Aretes {
 public:
 	Noeud* _noeud1, *_noeud2;
-	Aretes(Noeud* noeud1, Noeud* noeud2) {
+	int _id;
+	Aretes(Noeud* noeud1, Noeud* noeud2, int id) {
 		_noeud1 = noeud1;
 		_noeud2 = noeud2;
-
+		_id = id;
+		noeud1->_aretes.push_back(id);
+		noeud2->_aretes.push_back(id);
 		noeud1->connect(noeud2);
 		noeud2->connect(noeud1);
 	}
 
-	Noeud getNoeud(int number)  const
-	{
-		if (number == 1) return *_noeud1;
-		return *_noeud2;
-	}
-
-	// A APPELER UNIQUEMENT SI LE LIEN A LE NOEUD EN PARAMETRE RENVOIE NULLPTR SINON
-	Noeud* getAutreNoeud(Noeud* noeud)
-	{
-		if (_noeud1->getId() == noeud->getId()) return _noeud2;
-		else if (_noeud2->getId() == noeud->getId()) return _noeud1;
-		return nullptr;
-	}
 	Noeud* getNoeud1()  const { return _noeud1; }
 	Noeud* getNoeud2()  const { return _noeud2; }
 
@@ -38,8 +28,11 @@ public:
 		return (_noeud1->getId() == noeud->getId() || _noeud2->getId() == noeud->getId());
 	}
 
-	// A APPELER UNIQUEMENT SI LES LIENS ONT UN NOEUD EN COMMUN
-	// Renvoie nullptr si aucun noeud en commun
+	bool contains(int id) {
+		return (_noeud1->getId() == id || _noeud2->getId() == id);
+	}
+
+	// Renvoie le noeud qui n'est pas en commun avec l'arete passé en parametre
 	Noeud* nodeNotInCommon(Aretes l) {
 		if (_noeud1->getId() == l.getNoeud1()->getId() || _noeud1->getId() == l.getNoeud2()->getId()) { return _noeud2; }
 		return _noeud1;

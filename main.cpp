@@ -13,7 +13,7 @@ using namespace std;
 
 const std::string METHODETABNAME = "Méthode Utilisé, ";
 const std::string NBEXECUTIONTABNAME = "Nombre d'exécution, ";
-const std::string NBNOEUDTABNAME= "Nombre de noeud, ";
+const std::string NBNOEUDTABNAME = "Nombre de noeud, ";
 const std::string NBARETETABNAME = "Nombre d'arete, ";
 const std::string NBEMPLACEMENTTABNAME = "Nombre d'emplacement, ";
 const std::string NBCROISEMENTMEILLEURTABNAME = "Nombre de croisement (Meilleur), ";
@@ -21,7 +21,7 @@ const std::string NBCROISEMENTMOYENNETABNAME = "Nombre de croisement (Moyenne), 
 const std::string NBCROISEMENTMEDIANTABNAME = "Nombre de croisement (Médian), ";
 const std::string TEMPSEXECTABNAME = "Temps d'exécution (s) (Moyenne)";
 
-void calculResultats(int nbEssay, const std::string &methodeName, Graphe &G)
+void calculResultats(int nbEssay, const std::string& methodeName, Graphe& G)
 {
 	double moyenneCroisement = 0, medianCroisement;
 	int meilleurCroisement = INT_MAX;
@@ -73,7 +73,7 @@ void calculResultats(int nbEssay, const std::string &methodeName, Graphe &G)
 
 	std::ofstream resultats;
 	string nomFichier = "./resultats/resultats.csv";
-	remove("./resultats/resultats.csv") ;
+	remove("./resultats/resultats.csv");
 	resultats.open(nomFichier);
 
 	resultats << METHODETABNAME << NBEXECUTIONTABNAME << NBNOEUDTABNAME << NBARETETABNAME << NBEMPLACEMENTTABNAME
@@ -93,7 +93,7 @@ void calculResultats(int nbEssay, const std::string &methodeName, Graphe &G)
 
 int main() {
 
-	int gridWidth, gridHeight;
+	int gridWidth = 10, gridHeight = 10;
 
 	// ----- LECTURE D'UN FICHIER JSON DANS UN Graph -----
 
@@ -104,41 +104,84 @@ int main() {
 	if (lecture == 0) {
 		string nomFichierGraph = "graph_exemple1";
 		string nomFichierSlots = "slot_exemple1";
-		string fileGraph = "C:/Users/Lenovo Yoga 700/source/repos/ConsoleApplicationOpenGL/ConsoleApplicationOpenGL/exemple/Graphe/" + nomFichierGraph + ".json";
-		string fileSlots = "C:/Users/Lenovo Yoga 700/source/repos/ConsoleApplicationOpenGL/ConsoleApplicationOpenGL/exemple/Slots/" + nomFichierSlots + ".json";
+		string fileGraph = "D:/The World/Cours/M2S1/ProjetDessinGraphe/GitHub/ProjetDessinDeGraphe/exemple/Graphe/" + nomFichierGraph + ".json";
+		string fileSlots = "D:/The World/Cours/M2S1/ProjetDessinGraphe/GitHub/ProjetDessinDeGraphe/exemple/Slots/" + nomFichierSlots + ".json";
 		readFromJsonGraph(G, fileGraph);
 		readFromJsonSlots(G, fileSlots, gridWidth, gridHeight);
 	}
 	// Fichiers 2022
 	else if (lecture == 1) {
-		string nomFichierGraph = "auto21-1";
+		string nomFichierGraph = "auto21-6";
 		string nomFichier = "D:/The World/Cours/M2S1/ProjetDessinGraphe/GitHub/ProjetDessinDeGraphe/automatique/" + nomFichierGraph + ".json";
-		readFromJsonOldGraph(nomFichier, G, gridWidth, gridHeight);
+		//string nomFichier = "D:/The World/Cours/M2S1/ProjetDessinGraphe/GitHub/ProjetDessinDeGraphe/2019/" + nomFichierGraph + ".json";
+		std::vector<int> tmpvec = readFromJsonOldGraph(nomFichier, G, gridWidth, gridHeight);
+		string nomFichierSlots = nomFichierGraph + "-slots.json";
+		string nomFichierGrapheSave = "graph-" + nomFichierGraph + ".json";
+		bool save = false;
+		if (save) {
+			bool savex2 = false;
+			bool savex3 = false;
+			if (savex2) {
+				G.generateMoreEmplacement(2, gridWidth, gridHeight);
+				nomFichierSlots = "2X-" + nomFichierSlots;
+			}
+			else if (savex3) {
+				G.generateMoreEmplacement(3, gridWidth, gridHeight);
+				nomFichierSlots = "3X-" + nomFichierSlots;
+			}
+			writeToJsonSlots(G, nomFichierSlots, gridWidth, gridHeight);
+			//writeToJsonGraph(G, nomFichierGrapheSave);
+		}
+	}
+	else if (lecture == 2) {
+		std::ofstream out("data.txt");
+		std::streambuf* coutbuf = std::cout.rdbuf(); //save old buf
+		std::cout.rdbuf(out.rdbuf()); //redirect std::cout
+		std::unordered_map<string, std::vector<string>> mapGraphSlots;
+		for (int i = 1; i <= 6; i++) {
+			mapGraphSlots.insert({ "graph-"+to_string(i) + "-input",{to_string(i) + "-input-slots","2X-" + to_string(i) + "-input-slots","3X-" + to_string(i) + "-input-slots"}});
+		}
+		for (auto key : mapGraphSlots) {
+			for (int i = 0; i < key.second.size(); i++) {
+				std::cout << "-----------------------------------------" << std::endl;
+				std::cout << "Graphe: " << key.first << " " << key.second[i] << std::endl;
+				G.clearGraphe();
+				string fileGraph = "D:/The World/Cours/M2S1/ProjetDessinGraphe/GitHub/ProjetDessinDeGraphe/exemple/Graphe/" + key.first + ".json";
+				string fileSlots = "D:/The World/Cours/M2S1/ProjetDessinGraphe/GitHub/ProjetDessinDeGraphe/exemple/Slots/" + key.second[i] + ".json";
+				readFromJsonGraph(G, fileGraph);
+				readFromJsonSlots(G, fileSlots, gridWidth, gridHeight);
+				G.placementAleatoire();
+				G.recuitSimule();
+			}
+		}
+		std::cout.rdbuf(coutbuf); //reset to standard output again
+		return 0;
 	}
 
-	std::cout << "Grid: " << gridWidth << " " << gridHeight << std::endl;
-	
-	gridWidth = 10;
-	gridHeight = 10;
-
-	//G.gloutonRevisite();
+	G.placementAleatoire();
 	//G.afficherNoeuds();
 	//G.afficherEmplacement();
 	//G.afficherLiens();
-	calculResultats(100000, "Aléatoire", G);
-	
+	std::cout << "Nombre intersection apres placement: " << G.getNbCroisement() << std::endl;
+	//calculResultats(100000, "Aléatoire", G);
 
-	bool useOpenGL = false;
-	bool planarize = false;
-	
+	bool useOpenGL = true;
+
 	int maxX = gridWidth, maxY = gridHeight;
-	
+
 	std::cout << "Setup complete!" << std::endl;
-	
+
+	//G.bestDeplacement();
+
 	// OpenGL
 	srand(static_cast<unsigned int>(time(NULL)));
 	if (useOpenGL) {
-		dispOpenGL(G, gridWidth, gridHeight, maxX, maxY);
+		std::cout << "Grid: " << gridWidth << " " << gridHeight << std::endl;
+		if ((gridWidth <= 0) || (gridWidth > 100000))
+			gridWidth = 10;
+		if ((gridHeight <= 0) || (gridHeight > 100000))
+			gridHeight = 10;
+		dispOpenGL(G, gridWidth+1, gridHeight+1, maxX, maxY);
 	}
 	return 0;
 }

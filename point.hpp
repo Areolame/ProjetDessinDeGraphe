@@ -14,14 +14,12 @@ public:
 	int getX() const { return _x; }
 	int getY() const { return _y; }
 
-
 	int distance(Point point) const
 	{
 		int xValue = _x - point.getX();
 		int yValue = _y - point.getY();
 		return sqrt(xValue * xValue + yValue * yValue);
 	}
-
 
 	void setX(int x) { _x = x; }
 	void setY(int y) { _y = y; }
