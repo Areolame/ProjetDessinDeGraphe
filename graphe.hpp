@@ -531,24 +531,27 @@ public:
 				long bestScore = getNbCroisementGlouton();
 				int bestId = randomEmpId;
 				int index = (randomEmpId + 1) % _emplacementsPossibles.size();
-				for (int j = 0; j < _emplacementsPossibles.size(); j++) {
-					while (!_emplacementsPossibles[index].estDisponible()) {
-						index = (index + 1) % _emplacementsPossibles.size();
-					}
-					meilleurNoeud->setEmplacement(&_emplacementsPossibles[index]);
-					long newScore = getNbCroisementGlouton();
-					if (newScore < bestScore) {
-						bestScore = newScore;
-						bestId = index;
-					}
-					else if (newScore == bestScore)
-					{
-						++nbRencontre;
-						int aleatoire = generateRand(nbRencontre);
-						if (aleatoire == 1)
-						{
+				if (emplacementRestant())
+				{
+					for (int j = 0; j < _emplacementsPossibles.size(); j++) {
+						while (!_emplacementsPossibles[index].estDisponible()) {
+							index = (index + 1) % _emplacementsPossibles.size();
+						}
+						meilleurNoeud->setEmplacement(&_emplacementsPossibles[index]);
+						long newScore = getNbCroisementGlouton();
+						if (newScore < bestScore) {
 							bestScore = newScore;
 							bestId = index;
+						}
+						else if (newScore == bestScore)
+						{
+							++nbRencontre;
+							int aleatoire = generateRand(nbRencontre);
+							if (aleatoire == 1)
+							{
+								bestScore = newScore;
+								bestId = index;
+							}
 						}
 					}
 				}
@@ -694,6 +697,18 @@ public:
 
 		}
 
+	}
+
+	bool emplacementRestant()
+	{
+		for (Emplacement emplacement : _emplacementsPossibles)
+		{
+			if (emplacement.estDisponible())
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 
