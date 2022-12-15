@@ -83,6 +83,14 @@ public:
 		}
 	}
 
+	void placementNoeudAleatoire(int idNoeud)
+	{
+		int emplacementId = generateRand(_emplacementsPossibles.size()) - 1;
+		while (!_emplacementsPossibles[emplacementId].estDisponible()) {
+			emplacementId = (emplacementId + 1) % _emplacementsPossibles.size();
+		}
+		_noeuds[idNoeud].setEmplacement(&_emplacementsPossibles[emplacementId]);
+	}
 	long getNbCroisement()
 	{
 		int debug = 0;
@@ -432,6 +440,81 @@ public:
 		);
 	}
 
+	Emplacement* getMeilleurEmplacement(Noeud* meilleurNoeud)
+	{
+		int nbRencontre = 0;
+		int randomEmpId = generateRand(_emplacementsPossibles.size() - 1);
+		while (!_emplacementsPossibles[randomEmpId].estDisponible()) {
+			randomEmpId = (randomEmpId + 1) % _emplacementsPossibles.size();
+		}
+		meilleurNoeud->setEmplacement(&_emplacementsPossibles[randomEmpId]);
+		long bestScore = getNbCroisementGlouton();
+		int bestId = randomEmpId;
+		int index = (randomEmpId + 1) % _emplacementsPossibles.size();
+		if (emplacementRestant())
+		{
+			for (int j = 0; j < _emplacementsPossibles.size(); j++) {
+				while (!_emplacementsPossibles[index].estDisponible()) {
+					index = (index + 1) % _emplacementsPossibles.size();
+				}
+				meilleurNoeud->setEmplacement(&_emplacementsPossibles[index]);
+				long newScore = getNbCroisementGlouton();
+				if (newScore < bestScore) {
+					bestScore = newScore;
+					bestId = index;
+				}
+				else if (newScore == bestScore)
+				{
+					++nbRencontre;
+					int aleatoire = generateRand(nbRencontre);
+					if (aleatoire == 1)
+					{
+						bestScore = newScore;
+						bestId = index;
+					}
+				}
+			}
+		}
+		meilleurNoeud->setEmplacement(&_emplacementsPossibles[bestId]);
+		return &_emplacementsPossibles[bestId];
+	}
+	Emplacement* getMeilleurEmplacementGravite(Noeud* meilleurNoeud, Point gravite)
+	{
+		int nbRencontre = 0;
+		int randomEmpId = generateRand(_emplacementsPossibles.size() - 1);
+		while (!_emplacementsPossibles[randomEmpId].estDisponible()) {
+			randomEmpId = (randomEmpId + 1) % _emplacementsPossibles.size();
+		}
+		meilleurNoeud->setEmplacement(&_emplacementsPossibles[randomEmpId]);
+		long bestScore = getNbCroisementGlouton();
+		int bestId = randomEmpId;
+		int index = (randomEmpId + 1) % _emplacementsPossibles.size();
+		if (emplacementRestant())
+		{
+			for (int j = 0; j < _emplacementsPossibles.size(); j++) {
+				while (!_emplacementsPossibles[index].estDisponible()) {
+					index = (index + 1) % _emplacementsPossibles.size();
+				}
+				meilleurNoeud->setEmplacement(&_emplacementsPossibles[index]);
+				long newScore = getNbCroisementGlouton();
+				if (newScore < bestScore) {
+					bestScore = newScore;
+					bestId = index;
+				}
+				else if (newScore == bestScore && 
+					_emplacementsPossibles[bestId].getPosition().distance(gravite) > 
+					_emplacementsPossibles[index].getPosition().distance(gravite))
+				{
+					bestScore = newScore;
+					bestId = index;
+				}
+			}
+		}
+		meilleurNoeud->setEmplacement(&_emplacementsPossibles[bestId]);
+		return &_emplacementsPossibles[bestId];
+	}
+
+
 	void glouton() {
 		for (int i = 0; i < _noeuds.size(); i++) {
 			// Selection aléatoire du noeud
@@ -465,103 +548,38 @@ public:
 
 	void gloutonRevisite()
 	{
-		int idNoeud = 0;
+		Noeud* noeud = nullptr;
 		int nbRencontre = 0;
-		for (int i = 1; i < _noeuds.size(); ++i)
+		for (int i = 0; i < _noeuds.size(); ++i)
 		{
-			if (!_noeuds[i].estPlace() &&
-				_noeuds[i].getVoisins().size() > _noeuds[idNoeud].getVoisins().size())
+			if (noeud == nullptr)
 			{
-				idNoeud = i;
+				noeud = &_noeuds[i];
+			}
+			else if (!_noeuds[i].estPlace() &&
+				_noeuds[i].getVoisins().size() > noeud->getVoisins().size())
+			{
+				noeud = &_noeuds[i];
 				nbRencontre = 1;
 			}
 			else if (!_noeuds[i].estPlace() &&
-				_noeuds[i].getVoisins().size() == _noeuds[idNoeud].getVoisins().size())
+				_noeuds[i].getVoisins().size() == noeud->getVoisins().size())
 			{
 				++nbRencontre;
 				int aleatoire = generateRand(nbRencontre);
 				if (aleatoire == 1)
 				{
-					idNoeud = i;
+					noeud = &_noeuds[i];
 				}
 			}
 		}
 
 		Point centreGravite = getCentreGravite();
-		_noeuds[idNoeud].setEmplacement(getEmplacementPlusProche(centreGravite));
+		noeud->setEmplacement(getEmplacementPlusProche(centreGravite));
 
-		while (!estPlace())
-		{
-			Noeud* meilleurNoeud = nullptr;
-			nbRencontre = 0;
-			for (int i = 0; i < _noeuds.size(); ++i)
-			{
-				if (!_noeuds[i].estPlace())
-				{
-					Noeud* currentVoisin = &_noeuds[i];
-					if (meilleurNoeud == nullptr)
-					{
-						meilleurNoeud = currentVoisin;
-					}
-					else if (meilleurNoeud->getVoisins().size() < currentVoisin->getVoisins().size())
-					{
-						meilleurNoeud = currentVoisin;
-						nbRencontre = 0;
-					}
-					else if (meilleurNoeud->getVoisins().size() == currentVoisin->getVoisins().size())
-					{
-						++nbRencontre;
-						int aleatoire = generateRand(nbRencontre);
-						if (aleatoire == 1)
-						{
-							meilleurNoeud = currentVoisin;
-						}
-					}
-				}
-
-			}
-
-			if (meilleurNoeud != nullptr)
-			{
-				int randomEmpId = generateRand(_emplacementsPossibles.size() - 1);
-				while (!_emplacementsPossibles[randomEmpId].estDisponible()) {
-					randomEmpId = (randomEmpId + 1) % _emplacementsPossibles.size();
-				}
-				meilleurNoeud->setEmplacement(&_emplacementsPossibles[randomEmpId]);
-				long bestScore = getNbCroisementGlouton();
-				int bestId = randomEmpId;
-				int index = (randomEmpId + 1) % _emplacementsPossibles.size();
-				if (emplacementRestant())
-				{
-					for (int j = 0; j < _emplacementsPossibles.size(); j++) {
-						while (!_emplacementsPossibles[index].estDisponible()) {
-							index = (index + 1) % _emplacementsPossibles.size();
-						}
-						meilleurNoeud->setEmplacement(&_emplacementsPossibles[index]);
-						long newScore = getNbCroisementGlouton();
-						if (newScore < bestScore) {
-							bestScore = newScore;
-							bestId = index;
-						}
-						else if (newScore == bestScore)
-						{
-							++nbRencontre;
-							int aleatoire = generateRand(nbRencontre);
-							if (aleatoire == 1)
-							{
-								bestScore = newScore;
-								bestId = index;
-							}
-						}
-					}
-				}
-				meilleurNoeud->setEmplacement(&_emplacementsPossibles[bestId]);
-			}
-
-		}
+		completeBasicGlouton();
 
 	}
-
 	void gloutonRevisiteGravite()
 	{
 		int idNoeud = 0;
@@ -602,28 +620,35 @@ public:
 					{
 						meilleurNoeud = currentVoisin;
 					}
-					else if (meilleurNoeud->getVoisins().size() < currentVoisin->getVoisins().size())
+					else if (_noeuds[i].getVoisinsPlaces() > _noeuds[idNoeud].getVoisinsPlaces())
 					{
-						meilleurNoeud = currentVoisin;
-						nbRencontre = 0;
+						idNoeud = i;
+						nbRencontre = 1;
 					}
-					else if (meilleurNoeud->getVoisins().size() == currentVoisin->getVoisins().size())
+					else if (_noeuds[i].getVoisinsPlaces() == _noeuds[idNoeud].getVoisinsPlaces())
 					{
-						++nbRencontre;
-						int aleatoire = generateRand(nbRencontre);
-						if (aleatoire == 1)
+						if (_noeuds[i].getVoisins().size() > _noeuds[idNoeud].getVoisins().size())
 						{
-							meilleurNoeud = currentVoisin;
+							idNoeud = i;
+							nbRencontre = 1;
+						}
+						else if (_noeuds[i].getVoisins().size() == _noeuds[idNoeud].getVoisins().size())
+						{
+							++nbRencontre;
+							int aleatoire = generateRand(nbRencontre);
+							if (aleatoire == 1)
+							{
+								idNoeud = i;
+							}
 						}
 					}
 				}
-
 			}
 
 			if (meilleurNoeud != nullptr)
 			{
 				centreGravite = getCentreGraviteNoeudPlaces();
-				Emplacement* emplacement = getEmplacementPlusProche(centreGravite);
+				Emplacement* emplacement = getMeilleurEmplacementGravite(meilleurNoeud, centreGravite);
 				meilleurNoeud->setEmplacement(emplacement);
 			}
 
@@ -670,18 +695,77 @@ public:
 					{
 						meilleurNoeud = currentVoisin;
 					}
-					else if (meilleurNoeud->getVoisins().size() < currentVoisin->getVoisins().size())
+					else if (_noeuds[i].getVoisinsPlaces() > _noeuds[idNoeud].getVoisinsPlaces())
+					{
+						idNoeud = i;
+						nbRencontre = 1;
+					}
+					else if (_noeuds[i].getVoisinsPlaces() == _noeuds[idNoeud].getVoisinsPlaces())
+					{
+						if (_noeuds[i].getVoisins().size() > _noeuds[idNoeud].getVoisins().size())
+						{
+							idNoeud = i;
+							nbRencontre = 1;
+						}
+						else if (_noeuds[i].getVoisins().size() == _noeuds[idNoeud].getVoisins().size())
+						{
+							++nbRencontre;
+							int aleatoire = generateRand(nbRencontre);
+							if (aleatoire == 1)
+							{
+								idNoeud = i;
+							}
+						}
+					}
+				}
+			}
+
+			if (meilleurNoeud != nullptr)
+			{
+				centreGravite = getCentreGraviteVoisin(meilleurNoeud);
+				Emplacement* emplacement = getMeilleurEmplacementGravite(meilleurNoeud, centreGravite);
+				meilleurNoeud->setEmplacement(emplacement);
+			}
+
+		}
+
+	}
+	void completeBasicGlouton()
+	{
+
+		while (!estPlace())
+		{
+			Noeud* meilleurNoeud = nullptr;
+			int nbRencontre = 0;
+			for (int i = 0; i < _noeuds.size(); ++i)
+			{
+				if (!_noeuds[i].estPlace())
+				{
+					Noeud* currentVoisin = &_noeuds[i];
+					if (meilleurNoeud == nullptr)
 					{
 						meilleurNoeud = currentVoisin;
-						nbRencontre = 0;
 					}
-					else if (meilleurNoeud->getVoisins().size() == currentVoisin->getVoisins().size())
+					else if (_noeuds[i].getVoisinsPlaces() > meilleurNoeud->getVoisinsPlaces())
 					{
-						++nbRencontre;
-						int aleatoire = generateRand(nbRencontre);
-						if (aleatoire == 1)
+						meilleurNoeud = &_noeuds[i];
+						nbRencontre = 1;
+					}
+					else if (_noeuds[i].getVoisinsPlaces() == meilleurNoeud->getVoisinsPlaces())
+					{
+						if (_noeuds[i].getVoisins().size() > meilleurNoeud->getVoisins().size())
 						{
-							meilleurNoeud = currentVoisin;
+							meilleurNoeud = &_noeuds[i];
+							nbRencontre = 1;
+						}
+						else if (_noeuds[i].getVoisins().size() == meilleurNoeud->getVoisins().size())
+						{
+							++nbRencontre;
+							int aleatoire = generateRand(nbRencontre);
+							if (aleatoire == 1)
+							{
+								meilleurNoeud = &_noeuds[i];
+							}
 						}
 					}
 				}
@@ -690,13 +774,10 @@ public:
 
 			if (meilleurNoeud != nullptr)
 			{
-				centreGravite = getCentreGraviteVoisin(meilleurNoeud);
-				Emplacement* emplacement = getEmplacementPlusProche(centreGravite);
-				meilleurNoeud->setEmplacement(emplacement);
+				meilleurNoeud->setEmplacement(getMeilleurEmplacement(meilleurNoeud));
 			}
 
 		}
-
 	}
 
 	bool emplacementRestant()
@@ -780,6 +861,96 @@ public:
 		return false;
 	}
 
+
+	void croisementVoisinageFrom(Graphe* graphe1, Graphe* graphe2)
+	{
+		int currentGrapheNumber = generateRand(2);
+		Graphe* currentGraphe;
+		if (currentGrapheNumber == 1) currentGraphe = graphe1;
+		else currentGraphe = graphe2;
+		std::vector<bool> noeudNonTraite(false, graphe1->_noeuds.size());
+
+		
+		while (std::count(noeudNonTraite.begin(), noeudNonTraite.end(), false))
+		{
+			Noeud* meilleurNoeud = nullptr;
+			int meilleurScore;
+			//Trouve le meilleur noeud du graphe en cours d'analyse
+			for (int i = 0; i < _noeuds.size(); ++i)
+			{
+				if (!_noeuds[i].estPlace())
+				{
+					if (meilleurNoeud == nullptr)
+					{
+						meilleurNoeud = &currentGraphe->_noeuds[i];
+						meilleurScore = currentGraphe->getScoreCroisementNode(i);
+					}
+					else if (meilleurScore > currentGraphe->getScoreCroisementNode(i))
+					{
+						meilleurNoeud = &currentGraphe->_noeuds[i];
+						meilleurScore = currentGraphe->getScoreCroisementNode(i);
+					}
+				}
+			}
+
+			Emplacement* currentEmplacement = meilleurNoeud->getEmplacement();
+			_noeuds[meilleurNoeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
+			graphe1->_noeuds[meilleurNoeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
+			graphe2->_noeuds[meilleurNoeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
+			noeudNonTraite[meilleurNoeud->getId()] = true;
+
+			//Place tout les voisins du point choisis
+			for (Noeud* noeud : meilleurNoeud->getVoisins())
+			{
+				if (!_noeuds[noeud->getId()].estPlace())
+				{
+					currentEmplacement = noeud->getEmplacement();
+					if (!currentEmplacement->estDisponible())
+					{
+						currentEmplacement = getMeilleurEmplacement(noeud);
+					}
+					_noeuds[noeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
+					graphe1->_noeuds[noeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
+					graphe2->_noeuds[noeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
+					noeudNonTraite[noeud->getId()] = true;
+				}
+			}
+
+			completeBasicGlouton();
+		}
+
+	}
+	void croisementAleatoireFrom(Graphe* graphe1, Graphe* graphe2)
+	{
+		std::vector<int> noeudNonTraite;
+		for (int noeud = 0; noeud < _noeuds.size(); ++noeud)
+		{
+			int random = generateRand(2);
+			Graphe* currentGraphe;
+			if (random == 1)
+			{
+				currentGraphe = graphe1;
+			}
+			else
+			{
+				currentGraphe = graphe2;
+			}
+			int idEmplacement = currentGraphe->_noeuds[noeud].getEmplacement()->getId();
+			if (_emplacementsPossibles[idEmplacement].estDisponible())
+			{
+				_noeuds[noeud].setEmplacement(&_emplacementsPossibles[noeud]);
+			}
+			else
+			{
+				noeudNonTraite.push_back(noeud);
+			}
+		}
+
+		for (int noeud : noeudNonTraite)
+		{
+			placementNoeudAleatoire(noeud);
+		}
+	}
 	int getScoreCroisementNode(int nodeIndex) {
 		long score = 0;
 		std::vector<int> indexPasse;
@@ -861,6 +1032,7 @@ public:
 		}
 		return score;
 	}
+
 
 
 
