@@ -28,6 +28,14 @@ public:
 		}
 		return true;
 	}
+	int getVoisinsPlaces() const {
+		int nbVoisinPlaces = 0;
+		for (Noeud* noeud : voisins)
+		{
+			if (noeud->estPlace()) ++nbVoisinPlaces;
+		}
+		return nbVoisinPlaces;
+	}
 	int getX()  const { return _emplacement->getX(); }
 	int getY()  const { return _emplacement->getY(); }
 	Point getPosition() const { return _emplacement->getPosition(); }
