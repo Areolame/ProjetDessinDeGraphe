@@ -440,14 +440,14 @@ public:
 		);
 	}
 
-	Emplacement* getMeilleurEmplacement(Noeud* meilleurNoeud)
+	Emplacement* getMeilleurEmplacement(Noeud& meilleurNoeud)
 	{
 		int nbRencontre = 0;
 		int randomEmpId = generateRand(_emplacementsPossibles.size() - 1);
 		while (!_emplacementsPossibles[randomEmpId].estDisponible()) {
 			randomEmpId = (randomEmpId + 1) % _emplacementsPossibles.size();
 		}
-		meilleurNoeud->setEmplacement(&_emplacementsPossibles[randomEmpId]);
+		meilleurNoeud.setEmplacement(&_emplacementsPossibles[randomEmpId]);
 		long bestScore = getNbCroisementGlouton();
 		int bestId = randomEmpId;
 		int index = (randomEmpId + 1) % _emplacementsPossibles.size();
@@ -457,7 +457,7 @@ public:
 				while (!_emplacementsPossibles[index].estDisponible()) {
 					index = (index + 1) % _emplacementsPossibles.size();
 				}
-				meilleurNoeud->setEmplacement(&_emplacementsPossibles[index]);
+				meilleurNoeud.setEmplacement(&_emplacementsPossibles[index]);
 				long newScore = getNbCroisementGlouton();
 				if (newScore < bestScore) {
 					bestScore = newScore;
@@ -475,7 +475,6 @@ public:
 				}
 			}
 		}
-		meilleurNoeud->setEmplacement(&_emplacementsPossibles[bestId]);
 		return &_emplacementsPossibles[bestId];
 	}
 	Emplacement* getMeilleurEmplacementGravite(Noeud* meilleurNoeud, Point gravite)
@@ -732,7 +731,6 @@ public:
 	}
 	void completeBasicGlouton()
 	{
-
 		while (!estPlace())
 		{
 			Noeud* meilleurNoeud = nullptr;
@@ -774,7 +772,7 @@ public:
 
 			if (meilleurNoeud != nullptr)
 			{
-				meilleurNoeud->setEmplacement(getMeilleurEmplacement(meilleurNoeud));
+				meilleurNoeud->setEmplacement(getMeilleurEmplacement(*meilleurNoeud));
 			}
 
 		}
@@ -861,17 +859,49 @@ public:
 		return false;
 	}
 
-
-	void croisementVoisinageFrom(Graphe* graphe1, Graphe* graphe2)
+	void copyFromGraphe(Graphe &graphe)
 	{
-		int currentGrapheNumber = generateRand(2);
-		Graphe* currentGraphe;
-		if (currentGrapheNumber == 1) currentGraphe = graphe1;
-		else currentGraphe = graphe2;
-		std::vector<bool> noeudNonTraite(false, graphe1->_noeuds.size());
+		for (int i = 0; i < graphe._emplacementsPossibles.size(); ++i)
+		{
+			_emplacementsPossibles.push_back(
+				Emplacement(
+					Point(graphe._emplacementsPossibles[i].getX(), graphe._emplacementsPossibles[i].getY())
+					, i)
+			);
+		}
+		for (int i = 0; i < graphe._noeuds.size(); ++i)
+		{
+			_noeuds.push_back(Noeud(i));
+		}
 
-		
-		while (std::count(noeudNonTraite.begin(), noeudNonTraite.end(), false))
+		for (int i = 0; i < graphe._liens.size(); ++i)
+		{
+			int id1 = graphe._liens[i].getNoeud1()->getId();
+			int id2 = graphe._liens[i].getNoeud2()->getId();
+			_liens.push_back(Aretes(&_noeuds[id1], &_noeuds[id2] ,i));
+		}
+		for (int i = 0; i < graphe._noeuds.size(); ++i)
+		{
+			int idEmplacement = graphe._noeuds[i].getEmplacement()->getId();
+			_noeuds[i].setEmplacement(&_emplacementsPossibles[idEmplacement]);
+		}
+	}
+
+
+	void croisementVoisinageFrom(Graphe& originalGraphe1, Graphe& originalGraphe2)
+	{
+		Graphe* currentGraphe;
+		Graphe graphe1, graphe2;
+		graphe1.copyFromGraphe(originalGraphe1);
+		graphe2.copyFromGraphe(originalGraphe2);
+
+		int currentGrapheNumber = generateRand(2);
+		if (currentGrapheNumber == 1) currentGraphe = &graphe1;
+		else currentGraphe = &graphe2;
+
+		int nbNoeudATraiter = graphe1._noeuds.size();
+
+		while (nbNoeudATraiter > 0)
 		{
 			Noeud* meilleurNoeud = nullptr;
 			int meilleurScore;
@@ -894,10 +924,14 @@ public:
 			}
 
 			Emplacement* currentEmplacement = meilleurNoeud->getEmplacement();
+			if (!_emplacementsPossibles[currentEmplacement->getId()].estDisponible())
+			{
+				currentEmplacement = getMeilleurEmplacement(_noeuds[meilleurNoeud->getId()]);
+			}
 			_noeuds[meilleurNoeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
-			graphe1->_noeuds[meilleurNoeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
-			graphe2->_noeuds[meilleurNoeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
-			noeudNonTraite[meilleurNoeud->getId()] = true;
+			graphe1._noeuds[meilleurNoeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
+			graphe2._noeuds[meilleurNoeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
+			--nbNoeudATraiter;
 
 			//Place tout les voisins du point choisis
 			for (Noeud* noeud : meilleurNoeud->getVoisins())
@@ -907,16 +941,28 @@ public:
 					currentEmplacement = noeud->getEmplacement();
 					if (!currentEmplacement->estDisponible())
 					{
-						currentEmplacement = getMeilleurEmplacement(noeud);
+						currentEmplacement = getMeilleurEmplacement(_noeuds[noeud->getId()]);
 					}
 					_noeuds[noeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
-					graphe1->_noeuds[noeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
-					graphe2->_noeuds[noeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
-					noeudNonTraite[noeud->getId()] = true;
+					graphe1._noeuds[noeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
+					graphe2._noeuds[noeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
+					--nbNoeudATraiter;
 				}
 			}
 
-			completeBasicGlouton();
+			graphe1.completeBasicGlouton();
+			graphe2.completeBasicGlouton();
+
+			if (currentGrapheNumber == 1)
+			{
+				currentGraphe = &graphe2;
+				currentGrapheNumber = 0;
+			}
+			else
+			{
+				currentGraphe = &graphe1;
+				currentGrapheNumber = 1;
+			}
 		}
 
 	}

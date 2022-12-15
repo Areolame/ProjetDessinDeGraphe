@@ -14,7 +14,7 @@ int findBestGraphe()
 	int meilleurID = 0;
 	int nbRencontre = 0;
 	int currentNbCroisement, meilleurNbCroisement = graphes[0].getNbCroisement();
-	for (int i = 0; i < graphes.size(); ++i)
+	for (int i = 1; i < graphes.size(); ++i)
 	{
 		currentNbCroisement = graphes[i].getNbCroisement();
 		if (currentNbCroisement < meilleurNbCroisement)
@@ -39,12 +39,12 @@ int findBestGraphe()
 
 double calculMoyenneGraphes()
 {
-	int moyenne = 0;
+	double moyenne = 0;
 	for (Graphe graphe : graphes)
 	{
 		moyenne += graphe.getNbCroisement();
 	}
-	return moyenne;
+	return moyenne/graphes.size();
 }
 
 int perfectGraphe()
@@ -61,7 +61,7 @@ int perfectGraphe()
 
 
 
-Graphe* grapheGenetique(int population, int maxIteration, const std::string &nomGraphe, const std::string &nomSlot)
+Graphe grapheGenetique(int population, int maxIteration, const std::string &nomGraphe, const std::string &nomSlot)
 {
 	isChild.resize(population);
 	graphes.resize(population);
@@ -77,8 +77,8 @@ Graphe* grapheGenetique(int population, int maxIteration, const std::string &nom
 	while (currentIteration < maxIteration && (index = perfectGraphe()) == -1)
 	{
 		double moyenne = calculMoyenneGraphes();
-		std::cout << "Current iteration: " << currentIteration;
-		//Definit les enfants
+
+		//Definit les nouveaux enfants
 		for (int i = 0; i < graphes.size(); ++i)
 		{
 			if (graphes[i].getNbCroisement() < moyenne)
@@ -99,17 +99,20 @@ Graphe* grapheGenetique(int population, int maxIteration, const std::string &nom
 				int grapheID1, grapheID2;
 				do
 				{
-					grapheID1 = generateRand(graphes.size() - 1) - 1;
+					grapheID1 = generateRand(graphes.size()) - 1;
 				}
 				while (isChild[grapheID1]);
 				do
 				{
-					grapheID2 = generateRand(graphes.size() - 1) - 1;
-				} while (isChild[grapheID2]);
+					grapheID2 = generateRand(graphes.size()) - 1;
+				} 
+				while (isChild[grapheID2]);
 
-				graphes[i] = Graphe();
-				graphes[i].croisementVoisinageFrom(&graphes[grapheID1], &graphes[grapheID2]);
+				graphes[i].croisementVoisinageFrom(graphes[grapheID1], graphes[grapheID2]);
+				//graphes[i].completeBasicGlouton();
+
 			}
+			++currentIteration;
 		}
 
 	}
@@ -118,7 +121,7 @@ Graphe* grapheGenetique(int population, int maxIteration, const std::string &nom
 		index = findBestGraphe();
 	}
 
-	return &graphes[index];
+	return graphes[index];
 }
 
 
