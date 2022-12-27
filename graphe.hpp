@@ -796,7 +796,6 @@ public:
 						}
 					}
 				}
-
 			}
 
 			if (meilleurNoeud != nullptr)
@@ -809,9 +808,9 @@ public:
 
 	bool emplacementRestant()
 	{
-		for (Emplacement emplacement : _emplacementsPossibles)
+		for (int i = 0; i < _emplacementsPossibles.size(); ++i)
 		{
-			if (emplacement.estDisponible())
+			if (_emplacementsPossibles[i].estDisponible())
 			{
 				return true;
 			}

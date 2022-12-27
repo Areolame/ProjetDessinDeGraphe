@@ -54,6 +54,10 @@ public:
 	}
 	void ecraseNoeud(Emplacement* emplacement)
 	{
+		if (_emplacement != nullptr)
+		{
+			_emplacement->removeNoeud();
+		}
 		if (emplacement->_noeud != nullptr)
 		{
 			emplacement->_noeud->clearEmplacement();
