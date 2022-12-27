@@ -39,12 +39,24 @@ public:
 	int getX()  const { return _emplacement->getX(); }
 	int getY()  const { return _emplacement->getY(); }
 	Point getPosition() const { return _emplacement->getPosition(); }
+	bool compare(const Noeud* noeud) const { 
+		return getX() == noeud->getX() && getY() == noeud->getY(); 
+	}
 	int getId() const { return _id; }
 
 	void setEmplacement(Emplacement* emplacement)
 	{
 		if (_emplacement != nullptr) {
 			_emplacement->removeNoeud();
+		}
+		_emplacement = emplacement;
+		emplacement->setNoeud(this);
+	}
+	void ecraseNoeud(Emplacement* emplacement)
+	{
+		if (emplacement->_noeud != nullptr)
+		{
+			emplacement->_noeud->clearEmplacement();
 		}
 		_emplacement = emplacement;
 		emplacement->setNoeud(this);

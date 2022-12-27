@@ -77,6 +77,7 @@ Graphe grapheGenetique(int population, int maxIteration, const std::string &nomG
 	while (currentIteration < maxIteration && (index = perfectGraphe()) == -1)
 	{
 		double moyenne = calculMoyenneGraphes();
+		std::cout << "Current Iteration: " << currentIteration << "\n";
 
 		//Definit les nouveaux enfants
 		for (int i = 0; i < graphes.size(); ++i)
@@ -107,13 +108,11 @@ Graphe grapheGenetique(int population, int maxIteration, const std::string &nomG
 					grapheID2 = generateRand(graphes.size()) - 1;
 				} 
 				while (isChild[grapheID2]);
-
 				graphes[i].croisementVoisinageFrom(graphes[grapheID1], graphes[grapheID2]);
-				//graphes[i].completeBasicGlouton();
 
 			}
-			++currentIteration;
 		}
+		++currentIteration;
 
 	}
 	if (currentIteration >= maxIteration)

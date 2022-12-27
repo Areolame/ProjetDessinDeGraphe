@@ -83,6 +83,16 @@ public:
 		}
 	}
 
+	std::vector<Noeud> noeudsNonPlaces()
+	{
+		std::vector<Noeud> noeudsNonPlaces;
+		for (Noeud noeud : _noeuds)
+		{
+			noeudsNonPlaces.push_back(noeud);
+		}
+		return noeudsNonPlaces;
+	}
+
 	void placementNoeudAleatoire(int idNoeud)
 	{
 		int emplacementId = generateRand(_emplacementsPossibles.size()) - 1;
@@ -899,60 +909,109 @@ public:
 		if (currentGrapheNumber == 1) currentGraphe = &graphe1;
 		else currentGraphe = &graphe2;
 
-		int nbNoeudATraiter = graphe1._noeuds.size();
+		int nbNoeudATraiter = graphe1._noeuds.size() - nbNoeudEnCommun(graphe1, graphe2);
+		//std::cout << "Nb noeud a traiter au debut: " << nbNoeudATraiter << "\n";
 
 		while (nbNoeudATraiter > 0)
 		{
 			Noeud* meilleurNoeud = nullptr;
 			int meilleurScore;
+			int nbRencontre = 0;
+			//std::cout << "Nb noeud a traiter encore: " << nbNoeudATraiter << "\n";
+
 			//Trouve le meilleur noeud du graphe en cours d'analyse
 			for (int i = 0; i < _noeuds.size(); ++i)
 			{
 				if (!_noeuds[i].estPlace())
 				{
-					if (meilleurNoeud == nullptr)
+					if (meilleurNoeud == nullptr || meilleurScore < currentGraphe->getScoreCroisementNode(i))
 					{
 						meilleurNoeud = &currentGraphe->_noeuds[i];
 						meilleurScore = currentGraphe->getScoreCroisementNode(i);
+						nbRencontre = 1;
 					}
-					else if (meilleurScore > currentGraphe->getScoreCroisementNode(i))
+					else if (meilleurScore == currentGraphe->getScoreCroisementNode(i))
 					{
-						meilleurNoeud = &currentGraphe->_noeuds[i];
-						meilleurScore = currentGraphe->getScoreCroisementNode(i);
+						++nbRencontre;
+						int aleatoire = generateRand(nbRencontre);
+						if (aleatoire == 1)
+						{
+							meilleurNoeud = &currentGraphe->_noeuds[i];
+							meilleurScore = currentGraphe->getScoreCroisementNode(i);
+						}
 					}
 				}
 			}
 
-			Emplacement* currentEmplacement = meilleurNoeud->getEmplacement();
-			if (!_emplacementsPossibles[currentEmplacement->getId()].estDisponible())
+			Emplacement* meilleurEmplacement = meilleurNoeud->getEmplacement();
+			_noeuds[meilleurNoeud->getId()].setEmplacement(&_emplacementsPossibles[meilleurEmplacement->getId()]);
+			if (!graphe1._noeuds[meilleurNoeud->getId()].compare(&graphe2._noeuds[meilleurNoeud->getId()]))
 			{
-				currentEmplacement = getMeilleurEmplacement(_noeuds[meilleurNoeud->getId()]);
+				--nbNoeudATraiter;
 			}
-			_noeuds[meilleurNoeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
-			graphe1._noeuds[meilleurNoeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
-			graphe2._noeuds[meilleurNoeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
-			--nbNoeudATraiter;
+			graphe1._noeuds[meilleurNoeud->getId()].ecraseNoeud(&graphe1._emplacementsPossibles[meilleurEmplacement->getId()]);
+			graphe2._noeuds[meilleurNoeud->getId()].ecraseNoeud(&graphe2._emplacementsPossibles[meilleurEmplacement->getId()]);
 
 			//Place tout les voisins du point choisis
-			for (Noeud* noeud : meilleurNoeud->getVoisins())
+			for (Noeud* noeudVoisin : meilleurNoeud->getVoisins())
 			{
-				if (!_noeuds[noeud->getId()].estPlace())
+				if (!_noeuds[noeudVoisin->getId()].estPlace())
 				{
-					currentEmplacement = noeud->getEmplacement();
-					if (!currentEmplacement->estDisponible())
+					meilleurEmplacement = noeudVoisin->getEmplacement();
+					if (meilleurEmplacement == nullptr)
 					{
-						currentEmplacement = getMeilleurEmplacement(_noeuds[noeud->getId()]);
+						meilleurEmplacement = getMeilleurEmplacement(_noeuds[noeudVoisin->getId()]);
 					}
-					_noeuds[noeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
-					graphe1._noeuds[noeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
-					graphe2._noeuds[noeud->getId()].setEmplacement(&_emplacementsPossibles[currentEmplacement->getId()]);
+					else
+					{
+						meilleurEmplacement = &_emplacementsPossibles[meilleurEmplacement->getId()];
+						if (!meilleurEmplacement->estDisponible())
+						{
+							//std::cout << "Meilleur emplacement appelle\n";
+							meilleurEmplacement = getMeilleurEmplacement(_noeuds[noeudVoisin->getId()]);
+						}
+					}
+					_noeuds[noeudVoisin->getId()].setEmplacement(&_emplacementsPossibles[meilleurEmplacement->getId()]);
+					Noeud* noeudGraphe1 = &graphe1._noeuds[noeudVoisin->getId()];
+					Noeud* noeudGraphe2 = &graphe2._noeuds[noeudVoisin->getId()];
+					if (noeudGraphe1->estPlace() && noeudGraphe2->estPlace())
+					{
+						if (!noeudGraphe1->compare(noeudGraphe2))
+						{
+							--nbNoeudATraiter;
+						}
+					}
+					else
+					{
+						--nbNoeudATraiter;
+					}
+					graphe1._noeuds[noeudVoisin->getId()].ecraseNoeud(&graphe1._emplacementsPossibles[meilleurEmplacement->getId()]);
+					graphe2._noeuds[noeudVoisin->getId()].ecraseNoeud(&graphe2._emplacementsPossibles[meilleurEmplacement->getId()]);
+				}
+			}
+
+			//Liste des noeuds à placer
+			std::vector<int> noeudsAVerifier;
+			for (int i = 0; i < _noeuds.size(); ++i)
+			{
+				if (!graphe1._noeuds[i].estPlace() || !graphe2._noeuds[i].estPlace())
+				{
+					noeudsAVerifier.push_back(i);
+				}
+			}
+			graphe1.completeBasicGlouton();
+			graphe2.completeBasicGlouton();
+			//Si les lieux coincident les noeuds ne sont plus à traiter
+			for (int i = 0; i < noeudsAVerifier.size(); ++i)
+			{
+				if (graphe1._noeuds[noeudsAVerifier[i]].compare(&graphe2._noeuds[noeudsAVerifier[i]]))
+				{
 					--nbNoeudATraiter;
 				}
 			}
 
-			graphe1.completeBasicGlouton();
-			graphe2.completeBasicGlouton();
 
+			//Change le parent choisis 
 			if (currentGrapheNumber == 1)
 			{
 				currentGraphe = &graphe2;
@@ -965,7 +1024,24 @@ public:
 			}
 		}
 
+		_noeuds.swap(graphe1._noeuds);
+		_liens.swap(graphe1._liens);
+		_emplacementsPossibles.swap(graphe1._emplacementsPossibles);
 	}
+
+	int nbNoeudEnCommun(const Graphe& graphe1, const Graphe& graphe2)
+	{
+		int total = 0;
+		for (int i = 0; i < graphe1._noeuds.size(); ++i)
+		{
+			if (graphe1._noeuds[i].compare(&graphe2._noeuds[i]))
+			{
+				++total;
+			}
+		}
+		return total;
+	}
+
 	void croisementAleatoireFrom(Graphe* graphe1, Graphe* graphe2)
 	{
 		std::vector<int> noeudNonTraite;
