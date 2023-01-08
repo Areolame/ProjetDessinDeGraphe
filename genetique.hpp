@@ -82,7 +82,7 @@ Graphe grapheGenetique(int population, int maxIteration, const std::string &nomG
 		//Definit les nouveaux enfants
 		for (int i = 0; i < graphes.size(); ++i)
 		{
-			if (graphes[i].getNbCroisement() < moyenne)
+			if (graphes[i].getNbCroisement() > moyenne)
 			{
 				graphes[i].clearNodeEmplacement();
 				isChild[i] = true;
@@ -109,10 +109,13 @@ Graphe grapheGenetique(int population, int maxIteration, const std::string &nomG
 				} 
 				while (isChild[grapheID2]);
 				graphes[i].croisementVoisinageFrom(graphes[grapheID1], graphes[grapheID2]);
+				std::cout << "Enfant " << 
 
 			}
 		}
 		++currentIteration;
+
+		std::cout << "Meilleur graphe: " << graphes[findBestGraphe()].getNbCroisement() << " \n";
 
 	}
 	if (currentIteration >= maxIteration)

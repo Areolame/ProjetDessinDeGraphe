@@ -72,7 +72,7 @@ public:
 
 	void placementAleatoire()
 	{
-		std::cout << "Placement aleatoire" << std::endl;
+		//std::cout << "Placement aleatoire" << std::endl;
 		for (int i = 0; i < _noeuds.size(); ++i)
 		{
 			int emplacementId = generateRand(_emplacementsPossibles.size()) - 1;
@@ -452,28 +452,18 @@ public:
 
 	Emplacement* getMeilleurEmplacement(Noeud& meilleurNoeud)
 	{
-		Emplacement* oldEmplacement = meilleurNoeud.getEmplacement();
 		int nbRencontre = 0;
-		int randomEmpId = generateRand(_emplacementsPossibles.size() - 1);
-		while (!_emplacementsPossibles[randomEmpId].estDisponible()) {
-			randomEmpId = (randomEmpId + 1) % _emplacementsPossibles.size();
-		}
-		meilleurNoeud.setEmplacement(&_emplacementsPossibles[randomEmpId]);
-		long bestScore = getNbCroisementGlouton();
-		int bestId = randomEmpId;
-		int index = (randomEmpId + 1) % _emplacementsPossibles.size();
-		if (emplacementRestant())
-		{
-			for (int j = 0; j < _emplacementsPossibles.size(); j++) {
-				while (!_emplacementsPossibles[index].estDisponible()) {
-					std::cout << "Emplacement 2\n";
-					index = (index + 1) % _emplacementsPossibles.size();
-				}
-				meilleurNoeud.setEmplacement(&_emplacementsPossibles[index]);
+		long bestScore = INT_MAX;
+		int bestId;
+		for (int j = 0; j < _emplacementsPossibles.size(); j++) {
+			if (_emplacementsPossibles[j].estDisponible())
+			{
+				meilleurNoeud.setEmplacement(&_emplacementsPossibles[j]);
 				long newScore = getNbCroisementGlouton();
 				if (newScore < bestScore) {
 					bestScore = newScore;
-					bestId = index;
+					bestId = j;
+					nbRencontre = 1;
 				}
 				else if (newScore == bestScore)
 				{
@@ -482,19 +472,12 @@ public:
 					if (aleatoire == 1)
 					{
 						bestScore = newScore;
-						bestId = index;
+						bestId = j;
 					}
 				}
 			}
 		}
-		if (oldEmplacement == nullptr)
-		{
-			meilleurNoeud.clearEmplacement();
-		}
-		else
-		{
-			meilleurNoeud.setEmplacement(oldEmplacement);
-		}
+		meilleurNoeud.clearEmplacement();
 		return &_emplacementsPossibles[bestId];
 	}
 	Emplacement* getMeilleurEmplacementGravite(Noeud* meilleurNoeud, Point gravite)
@@ -928,14 +911,14 @@ public:
 		else currentGraphe = &graphe2;
 
 		int nbNoeudATraiter = graphe1._noeuds.size() - nbNoeudEnCommun(graphe1, graphe2);
-		std::cout << "Nb noeud a traiter au debut: " << nbNoeudATraiter << "\n";
+		//std::cout << "Nb noeud a traiter au debut: " << nbNoeudATraiter << "\n";
 
 		while (nbNoeudATraiter > 0)
 		{
 			Noeud* meilleurNoeud = nullptr;
 			int meilleurScore;
 			int nbRencontre = 0;
-			std::cout << "Nb noeud a traiter encore: " << nbNoeudATraiter << "\n";
+			//std::cout << "Nb noeud a traiter encore: " << nbNoeudATraiter << "\n";
 
 			//Trouve le meilleur noeud du graphe en cours d'analyse
 			for (int i = 0; i < _noeuds.size(); ++i)
@@ -1017,11 +1000,8 @@ public:
 					noeudsAVerifier.push_back(i);
 				}
 			}
-			std::cout << "Glouton 1\n";
 			graphe1.completeBasicGlouton();
-			std::cout << "Glouton 2\n";
 			graphe2.completeBasicGlouton();
-			std::cout << "Fin Glouton\n";
 			//Si les lieux coincident les noeuds ne sont plus à traiter
 			for (int i = 0; i < noeudsAVerifier.size(); ++i)
 			{
