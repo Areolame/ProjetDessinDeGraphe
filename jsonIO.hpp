@@ -1,5 +1,5 @@
-#ifndef JSONIO
-#define JSONIO
+#ifndef JSONIO_HPP
+#define JSONIO_HPP
 
 #include <string>
 #include <nlohmann/json.hpp>
@@ -11,7 +11,7 @@ using nlohmann::json;
 // ----- CREATION D'UN Graph A PARTIR D'UN FICHIER JSON -----
 // Precondition: Les id des noeuds sont ordonnées et commencent par 0
 void readFromJsonGraph(Graphe& G, string input) {
-	std::cout << input << std::endl;
+	std::cout << "Fichier Graphe: " << input << std::endl;
 	std::ifstream inp(input);
 	json j;
 	inp >> j;
@@ -37,7 +37,8 @@ void readFromJsonGraph(Graphe& G, string input) {
 
 // Lecture des slots
 // Precondition: Les id des slots sont ordonnés et commencent par 0
-void readFromJsonSlots(Graphe& G, string input, int& gridWidth, int& gridHeight) {
+void readFromJsonSlots(Graphe& G, string input) {
+	std::cout << "Fichier Slot: " << input << std::endl;
 	std::ifstream inp(input);
 	json j;
 	inp >> j;
@@ -54,16 +55,16 @@ void readFromJsonSlots(Graphe& G, string input, int& gridWidth, int& gridHeight)
 		x = j["slots"][i]["x"];
 		y = j["slots"][i]["y"];
 		G._emplacementsPossibles.push_back(Emplacement(Point(x,y), i));
-		if (x > gridWidth) { gridWidth = x; }
-		if (y > gridHeight) { gridHeight = y; }
+		if (x > G.gridWidth) { G.gridWidth = x; }
+		if (y > G.gridHeight) { G.gridHeight = y; }
 	}
 }
 
 // Sauvegarde des slots dans le fichier output
-void writeToJsonSlots(const Graphe& G, string output, int gridWidth, int gridHeight) {
+void writeToJsonSlots(const Graphe& G, string output) {
 	json j;
-	j["width"] = gridWidth;
-	j["height"] = gridHeight;
+	j["width"] = G.gridWidth;
+	j["height"] = G.gridHeight;
 
 	int slotsNumber = G._emplacementsPossibles.size();
 	for (int i = 0; i < slotsNumber; i++) {
@@ -101,13 +102,13 @@ void writeToJsonGraph(const Graphe& G, string output) {
 // ----- CREATION D'UN Graph A PARTIR D'UN FICHIER JSON -----
 // Creer les emplacements a partir des anciennes coord
 // Les noeuds doivent avoir des coordonnées
-std::vector<int> readFromJsonOldGraph(string input, Graphe& G, int& gridWidth, int& gridHeight) {
+std::vector<int> readFromJsonOldGraph(string input, Graphe& G) {
 	std::ifstream inp(input);
 	json j;
 	inp >> j;
-	gridWidth = j["width"];
-	gridHeight = j["height"];
-	std::cout << "gridWidth: " << gridWidth << " gridHeight: " << gridHeight << std::endl;
+	G.gridWidth = j["width"];
+	G.gridHeight = j["height"];
+	std::cout << "gridWidth: " << G.gridWidth << " gridHeight: " << G.gridHeight << std::endl;
 
 	if (j["nodes"] == nullptr) {
 		exit(1);

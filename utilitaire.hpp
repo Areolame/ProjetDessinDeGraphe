@@ -19,11 +19,11 @@ double generateDoubleRand(double n) {
     return dis(gen);
 }
 
-// Retourne une valeur entiere comprise dans [1,n]
+// Retourne une valeur entiere comprise dans [0,n]
 int generateRand(int n) {
     std::random_device rd;  // Will be used to obtain a seed for the random number engine
     std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
-    std::uniform_int_distribution<> dis(1, n);
+    std::uniform_int_distribution<> dis(0, n);
     return dis(gen);
 }
 

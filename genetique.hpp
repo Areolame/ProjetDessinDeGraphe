@@ -44,7 +44,7 @@ double calculMoyenneGraphes()
 	{
 		moyenne += graphe.getNbCroisement();
 	}
-	return moyenne/graphes.size();
+	return moyenne / graphes.size();
 }
 
 int perfectGraphe()
@@ -61,15 +61,14 @@ int perfectGraphe()
 
 
 
-Graphe grapheGenetique(int population, int maxIteration, const std::string &nomGraphe, const std::string &nomSlot)
+Graphe grapheGenetique(int population, int maxIteration, const std::string& nomGraphe, const std::string& nomSlot, bool useRecuit)
 {
 	isChild.resize(population);
 	graphes.resize(population);
 	for (int i = 0; i < population; ++i)
 	{
-		int a, b;
 		readFromJsonGraph(graphes[i], nomGraphe);
-		readFromJsonSlots(graphes[i], nomSlot, a, b);
+		readFromJsonSlots(graphes[i], nomSlot);
 		graphes[i].placementAleatoire();
 	}
 	int index;
@@ -101,16 +100,15 @@ Graphe grapheGenetique(int population, int maxIteration, const std::string &nomG
 				do
 				{
 					grapheID1 = generateRand(graphes.size()) - 1;
-				}
-				while (isChild[grapheID1]);
+				} while (isChild[grapheID1]);
 				do
 				{
 					grapheID2 = generateRand(graphes.size()) - 1;
-				} 
-				while (isChild[grapheID2]);
+				} while (isChild[grapheID2]);
 				graphes[i].croisementVoisinageFrom(graphes[grapheID1], graphes[grapheID2]);
-				std::cout << "Enfant " << 
-
+				if (useRecuit) {
+					graphes[i].recuitSimule(0.99, 100.0, 0);
+				}
 			}
 		}
 		++currentIteration;
