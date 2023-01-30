@@ -13,9 +13,9 @@
 #include "dispOpenGL.hpp"
 #include "noDispRuns.hpp"
 #include "personnel.hpp"
-#include "logCSV.hpp"
 #include "ogdfFunctions.hpp"
-#include "genetique.hpp"
+//#include "genetique.hpp"
+#include "logCSV.hpp"
 
 using namespace std;
 
@@ -27,19 +27,26 @@ int main() {
 
 	Graphe G;
 	
-	string nomFichierGraph = "graph-3-input";
-	string nomFichierSlots = "3-input-slots";
+	string nomFichierGraph = "graph-4-input";
+	string nomFichierSlots = "4-input-slots";
 	string fileGraph = chemin + "exemple/Graphe/" + nomFichierGraph + ".json";
 	string fileSlots = chemin + "exemple/Slots/" + nomFichierSlots + ".json";
 	readFromJsonGraph(G, fileGraph);
 	readFromJsonSlots(G, fileSlots);
 
-	//G.generateMoreEmplacement(2, gridWidth, gridHeight);
+	//G = grapheGenetique(100,10,fileGraph,fileSlots,true);
+	//G.afficherNoeudSeul();
+	//G.afficherAreteDouble();
+	//G.afficherInfo();
 
-	G.placementAleatoire();
-	//ogdfRun(G);
-	//ogdfPlacementAuPlusProche(G);
+	ogdfRun(G);
+	//return 0;
 	//ogdfReverse(G);
+	//G.placementAleatoire();
+	G.gloutonRevisite();
+	//G.recuitSimule();
+	//G.gloutonRevisite();
+	//ogdfPlacementAuPlusProche(G);
 	//G.generateMoreEmplacement(10);
 
 	//G.gloutonRevisiteVoisin();

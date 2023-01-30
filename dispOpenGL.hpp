@@ -35,6 +35,11 @@ bool recalc_illegal = false;
 bool debugNoeud = false;
 bool debugArete = false;
 bool debugEmplacement = false;
+bool previsionRecuit = false;
+bool stepRecuitSimule = false;
+bool stepSetup = false;
+double stepT;
+int stepNbCrois;
 std::vector<std::pair<int, int>> graphCopy;
 
 void error_callback(int error, const char* description) {
@@ -119,6 +124,13 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		case GLFW_KEY_F3:
 			debugEmplacement = true;
 			break;
+		case GLFW_KEY_F4:
+			previsionRecuit = true;
+			break;
+		case GLFW_KEY_F5:
+			stepRecuitSimule = true;
+			stepSetup = true;
+			break;
 		case GLFW_KEY_KP_ADD:
 			//if (currentZoom >= 30)
 			currentZoom = currentZoom - 30;
@@ -158,12 +170,11 @@ void dispOpenGL(Graphe& G, const int gridWidth, const int gridHeight, int maxX, 
 	maxNodeIndex = G._noeuds.size() - 1;
 	maxEmplacementIndex = G._emplacementsPossibles.size() - 1;
 
-	bool printRaccourcis = true;
+	bool printRaccourcis = false;
 	if (printRaccourcis) {
 		std::cout << "-------------------------------------" << std::endl;
 		std::cout << "RACCOURCIS CLAVIER POUR INTERRACTION OPENGL" << std::endl;
 		std::cout << "Touche Escape/Echap: Ferme la fenetre OpenGl." << std::endl;
-		std::cout << "Touche R: Change show_grid_size, pas a jour?" << std::endl;
 		std::cout << "Touche Gauche/Left: " << std::endl;
 		std::cout << "     -Si en mode selection de noeud(par defaut): Selectionne le noeud precedent." << std::endl;
 		std::cout << "     -Si en mode selection d'emplacement: Selectionne l'emplacement precedent." << std::endl;
@@ -232,10 +243,25 @@ void dispOpenGL(Graphe& G, const int gridWidth, const int gridHeight, int maxX, 
 		}
 		else if (startRecuit) {
 			std::cout << "Nb Croisement debut recuit: " << G.getNbCroisement() << std::endl;
+			auto start = std::chrono::system_clock::now();
 			G.recuitSimule();
-			G.bestDeplacement();
+			auto end = std::chrono::system_clock::now();
+			std::chrono::duration<double> secondsTotal = end - start;
+			std::cout << "Temps calcul: " << secondsTotal.count() << " secondes." << std::endl;
 			std::cout << "Nb Croisement fin recuit: " << G.getNbCroisement() << std::endl;
 			startRecuit = false;
+		}
+		else if (stepRecuitSimule) {
+			if (stepSetup) {
+				stepT = 100.0;
+				stepNbCrois = G.getNbCroisement();
+				stepSetup = false;
+			}
+			G.stepRecuitSimule(stepT, stepNbCrois);
+			if (stepT <= 0.0001 || stepNbCrois == 0) {
+				stepRecuitSimule = false;
+				std::cout << stepT << " " << stepNbCrois << std::endl;
+			}
 		}
 		else if (randomReset) {
 			G.clearNodeEmplacement();
@@ -244,7 +270,8 @@ void dispOpenGL(Graphe& G, const int gridWidth, const int gridHeight, int maxX, 
 		}
 		else if (gloutonReset) {
 			G.clearNodeEmplacement();
-			G.glouton();
+			G.gloutonRevisite();
+			std::cout << "Nb Croisement: " << G.getNbCroisement() << std::endl;
 			gloutonReset = false;
 		}
 		else if (affiche_score) {
@@ -334,6 +361,10 @@ void dispOpenGL(Graphe& G, const int gridWidth, const int gridHeight, int maxX, 
 			G.afficherEmplacement();
 			debugEmplacement = false;
 		}
+		else if (previsionRecuit) {
+			G.tempsCalculRecuitSimule();
+			previsionRecuit = false;
+		}
 		// affichage de la grille avec une marge de 1
 		glColor3f(0.0f, 1.0f, 0.0f);
 		glBegin(GL_LINE_STRIP);
@@ -344,6 +375,7 @@ void dispOpenGL(Graphe& G, const int gridWidth, const int gridHeight, int maxX, 
 		glVertex2d(-1, -1);
 		glEnd();
 		//afficher les edge
+		//glLineWidth(1.0f);
 		glColor3f(1.0f, 1.0f, 1.0f);
 		for (int i = 0; i < G._liens.size(); i++) {
 			glBegin(GL_LINE_STRIP);
@@ -351,7 +383,7 @@ void dispOpenGL(Graphe& G, const int gridWidth, const int gridHeight, int maxX, 
 			glVertex2d(G._liens[i].getNoeud2()->getX(), G._liens[i].getNoeud2()->getY());
 			glEnd();
 		}
-		if (show_noeud_illegal) {
+		if (show_noeud_illegal && !recalc_illegal) {
 			for (auto a : areteInter) {
 				glColor3f(1.0f, 0.0f, 0.0f);
 				glBegin(GL_LINE_STRIP);

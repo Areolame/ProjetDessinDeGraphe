@@ -8,10 +8,12 @@
 #include <chrono>
 #include "ogdfFunctions.hpp"
 #include <omp.h>
+#include "genetique.hpp"
 
-void generateCSV(int nbEssay, const std::string& methodeName, const std::string& methodeAlgoName, const std::string& nomGraphe, Graphe& G) {
+void generateCSV(int nbEssay, const std::string& methodeName, const std::string& methodeAlgoName, const std::string& nomGraphe, Graphe& G, std::string fileGraph="None", std::string fileSlots="None") {
 	double moyenneCroisement = 0, medianCroisement;
 	int meilleurCroisement = INT_MAX;
+	int nbSolutionIllegale = 0;
 	double tempsExecMoyenne = 0;
 	std::vector<int> croisementVector(nbEssay);
 	std::vector<double> tempExecVector(nbEssay);
@@ -27,13 +29,12 @@ void generateCSV(int nbEssay, const std::string& methodeName, const std::string&
 		else if (methodeName == "Glouton Voisin") G.gloutonRevisiteVoisin();
 		else if (methodeName == "OGDF") ogdfPlacementAuPlusProche(G);
 		else if (methodeName == "Aléatoire") G.placementAleatoire();
-		else
-		{
+		else if (methodeName != "Aucun") {
 			std::cout << "ERROR Aucune methode " << methodeName << " trouve !";
 			return;
 		}
 
-		if (G.estPlace()) {
+		if (methodeName == "Aucun" || G.estPlace()) {
 
 			if (methodeAlgoName == "Recuit Simulé") G.recuitSimule();
 			else if (methodeAlgoName == "Recuit Simulé Delay") G.recuitSimuleDelay();
@@ -48,6 +49,10 @@ void generateCSV(int nbEssay, const std::string& methodeName, const std::string&
 			else if (methodeAlgoName == "Recuit Simulé Tournoi Multiple M1") G.recuitSimuleTournoiMultiple(0.99999, 100, 1);
 			else if (methodeAlgoName == "Recuit Simulé Tournoi Multiple M2") G.recuitSimuleTournoiMultiple(0.99999, 100, 2);
 			else if (methodeAlgoName == "Best Deplacement") G.bestDeplacement();
+			else if (methodeAlgoName == "Génétique Recuit") G = grapheGenetique(100, 10, fileGraph, fileSlots, true);
+			else if (methodeAlgoName == "Génétique Recuit Random") G = grapheGenetique(100, 10, fileGraph, fileSlots, true, true);
+			else if (methodeAlgoName == "Génétique No Recuit") G = grapheGenetique(100, 10, fileGraph, fileSlots, false);
+			else if (methodeAlgoName == "Génétique No Recuit Random") G = grapheGenetique(100, 10, fileGraph, fileSlots, false, true);
 			else if (methodeAlgoName != "Aucun") {
 				std::cout << "ERROR Aucun algo " << methodeAlgoName << " trouve !";
 				return;
@@ -59,6 +64,9 @@ void generateCSV(int nbEssay, const std::string& methodeName, const std::string&
 			croisementVector[i] = G.getNbCroisement();
 			//cout << croisementVector[i] << "\n";
 			tempExecVector[i] = secondsTotal.count();
+			if (G.hasIllegalCrossing()) {
+				nbSolutionIllegale++;
+			}
 			G.clearNodeEmplacement();
 		}
 		else {
@@ -98,16 +106,20 @@ void generateCSV(int nbEssay, const std::string& methodeName, const std::string&
 		string nomFichier = "./resultats/" + nomGraphe + ".csv";
 		std::ofstream resultats(nomFichier, std::ios_base::app);
 
+		resultats << std::fixed;
 		resultats << methodeName << ","
 			<< methodeAlgoName << ","
 			<< nbEssay << ","
 			<< G._noeuds.size() << ","
 			<< G._liens.size() << ","
 			<< G._emplacementsPossibles.size() << ","
-			<< meilleurCroisement << ","
-			<< moyenneCroisement << ","
-			<< medianCroisement << ","
-			<< tempsExecMoyenne << "\n";
+			<< nbSolutionIllegale << ","
+			<< meilleurCroisement << ",";
+		if (moyenneCroisement > 100) { resultats << std::setprecision(0) << moyenneCroisement << ","; }
+		else { resultats << std::setprecision(1) << moyenneCroisement << ","; }
+		if (medianCroisement > 100) { resultats << std::setprecision(0) << medianCroisement << ","; }
+		else { resultats << std::setprecision(1) << medianCroisement << ","; }
+		resultats << std::setprecision(7) << tempsExecMoyenne << "\n";
 		resultats.close();
 	}
 }

@@ -7,6 +7,7 @@
 #include <ogdf/planarity/EmbedderMaxFace.h>
 #include <ogdf/planarity/PlanRep.h>
 #include <ogdf/planarlayout/PlanarDrawLayout.h>
+#include <ogdf/basic/simple_graph_alg.h>
 
 void createOGDFGraphFromGraphe(Graphe &G, ogdf::GridLayout &ogdfGL, ogdf::Graph &ogdfG) {
 	int nodeNumber = G._noeuds.size();
@@ -137,7 +138,8 @@ int ogdfReverse(Graphe &G) {
 void ogdfRun(Graphe &G) {
 	ogdf::Graph ogdfG;
 	ogdf::GridLayout ogdfGL{ ogdfG };
-
+	std::cout << "Connexe: " << ogdf::isConnected(ogdfG) << std::endl;
+	std::cout << "Biconnected: " << ogdf::isBiconnected(ogdfG) << std::endl;
 	std::cout << "Graph genus: " << ogdfG.genus() << std::endl;
 
 	createOGDFGraphFromGraphe(G, ogdfGL, ogdfG);

@@ -4,12 +4,7 @@
 #include <vector>
 #include <iostream>
 
-
-std::vector<Graphe> graphes;
-std::vector<bool> isChild;
-
-
-int findBestGraphe()
+int findBestGraphe(std::vector<Graphe>& graphes)
 {
 	int meilleurID = 0;
 	int nbRencontre = 0;
@@ -37,7 +32,7 @@ int findBestGraphe()
 	return meilleurID;
 }
 
-double calculMoyenneGraphes()
+double calculMoyenneGraphes(std::vector<Graphe>& graphes)
 {
 	double moyenne = 0;
 	for (Graphe graphe : graphes)
@@ -47,7 +42,7 @@ double calculMoyenneGraphes()
 	return moyenne / graphes.size();
 }
 
-int perfectGraphe()
+int perfectGraphe(std::vector<Graphe>& graphes)
 {
 	for (int i = 0; i < graphes.size(); ++i)
 	{
@@ -61,9 +56,9 @@ int perfectGraphe()
 
 
 
-Graphe grapheGenetique(int population, int maxIteration, const std::string& nomGraphe, const std::string& nomSlot, bool useRecuit)
+Graphe grapheGenetique(int population, int maxIteration, const std::string& nomGraphe, const std::string& nomSlot, bool useRecuit, bool useRand=false)
 {
-	isChild.resize(population);
+	std::vector<Graphe> graphes;
 	graphes.resize(population);
 	for (int i = 0; i < population; ++i)
 	{
@@ -73,52 +68,34 @@ Graphe grapheGenetique(int population, int maxIteration, const std::string& nomG
 	}
 	int index;
 	int currentIteration = 0;
-	while (currentIteration < maxIteration && (index = perfectGraphe()) == -1)
+	while (currentIteration < maxIteration && (index = perfectGraphe(graphes)) == -1)
 	{
-		double moyenne = calculMoyenneGraphes();
+		double moyenne = calculMoyenneGraphes(graphes);
 		std::cout << "Current Iteration: " << currentIteration << "\n";
 
-		//Definit les nouveaux enfants
-		for (int i = 0; i < graphes.size(); ++i)
-		{
-			if (graphes[i].getNbCroisement() > moyenne)
-			{
-				graphes[i].clearNodeEmplacement();
-				isChild[i] = true;
-			}
-			else
-			{
-				isChild[i] = false;
-			}
-		}
+		sort(graphes.begin(), graphes.end());
 
-		for (int i = 0; i < isChild.size(); ++i)
+		for (int i = population/2; i < population; ++i)
 		{
-			if (isChild[i])
-			{
-				int grapheID1, grapheID2;
-				do
-				{
-					grapheID1 = generateRand(graphes.size()) - 1;
-				} while (isChild[grapheID1]);
-				do
-				{
-					grapheID2 = generateRand(graphes.size()) - 1;
-				} while (isChild[grapheID2]);
-				graphes[i].croisementVoisinageFrom(graphes[grapheID1], graphes[grapheID2]);
-				if (useRecuit) {
-					graphes[i].recuitSimule(0.99, 100.0, 0);
-				}
+			graphes[i].clearNodeEmplacement();
+			//std::cout << "Enfant: " << i << std::endl;
+			int grapheID1, grapheID2;
+			grapheID1 = generateRand(population/2 - 1);
+			grapheID2 = generateRand(population/2 - 1);
+			//std::cout << "P1: " << grapheID1 << " P2: " << grapheID2 << std::endl;
+			graphes[i].croisementVoisinageFrom(graphes[grapheID1], graphes[grapheID2], useRand);
+			if (useRecuit) {
+				graphes[i].recuitSimule(0.99, 100.0, 0);
 			}
 		}
 		++currentIteration;
 
-		std::cout << "Meilleur graphe: " << graphes[findBestGraphe()].getNbCroisement() << " \n";
+		std::cout << "Meilleur graphe: " << graphes[findBestGraphe(graphes)].getNbCroisement() << " \n";
 
 	}
 	if (currentIteration >= maxIteration)
 	{
-		index = findBestGraphe();
+		index = findBestGraphe(graphes);
 	}
 
 	return graphes[index];

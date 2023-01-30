@@ -23,7 +23,7 @@ public:
 	void setNoeud1(Noeud* noeud1) { _noeud1 = noeud1; }
 	void setNoeud2(Noeud* noeud2) { _noeud2 = noeud2; }
 
-	bool contains(Noeud* noeud)
+	bool contains(Noeud* noeud) const
 	{
 		return (_noeud1->getId() == noeud->getId() || _noeud2->getId() == noeud->getId());
 	}
@@ -33,7 +33,7 @@ public:
 	}
 
 	// Renvoie le noeud qui n'est pas en commun avec l'arete passé en parametre
-	Noeud* nodeNotInCommon(Aretes l) {
+	Noeud* nodeNotInCommon(Aretes l) const {
 		if (_noeud1->getId() == l.getNoeud1()->getId() || _noeud1->getId() == l.getNoeud2()->getId()) { return _noeud2; }
 		return _noeud1;
 	}

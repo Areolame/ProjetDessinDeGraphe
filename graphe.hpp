@@ -24,7 +24,7 @@ public:
 
 	Graphe()
 	{}
-
+	
 	void afficherLiens() {
 		std::cout << "-----------------------------------------------" << std::endl;
 		std::cout << "Affichage DEBUG Aretes:" << std::endl;
@@ -70,6 +70,126 @@ public:
 		std::cout << "-----------------------------------------------" << std::endl;
 	}
 
+	void afficherNoeudSeul() {
+		std::cout << "-----------------------------------------------" << std::endl;
+		std::cout << "Affichage DEBUG Noeud Seul:" << std::endl;
+		int nbNoeudSeul = 0;
+		for (int i = 0; i < _noeuds.size(); i++) {
+			if (_noeuds[i]._aretes.size() == 0) {
+				std::cout << "Noeud: " << i << std::endl;
+				nbNoeudSeul++;
+			}
+		}
+		if (nbNoeudSeul == 0) {
+			std::cout << "Aucun" << std::endl;
+		}
+		std::cout << "-----------------------------------------------" << std::endl;
+	}
+
+	void afficherInfo() {
+		std::cout << "-----------------------------------------------" << std::endl;
+		std::cout << "Information sur le graphe:" << std::endl;
+		std::cout << "Nombre de noeud: " << _noeuds.size() << std::endl;
+		std::cout << "Nombre d'emplacement: " << _emplacementsPossibles.size() << std::endl;
+		std::cout << "Nombre d'aretes: " << _liens.size() << std::endl;
+		std::cout << "-----------------------------------------------" << std::endl;
+	}
+
+	void afficherAreteDouble() {
+		std::cout << "-----------------------------------------------" << std::endl;
+		std::cout << "Affichage DEBUG Arrete Double:" << std::endl;
+		int nbAreteDouble = 0;
+		for (int i = 0; i < _liens.size(); i++) {
+			int id1 = _liens[i].getNoeud1()->getId();
+			int id2 = _liens[i].getNoeud2()->getId();
+			for (int j = i + 1; j < _liens.size(); j++) {
+				int id12 = _liens[j].getNoeud1()->getId();
+				int id22 = _liens[j].getNoeud2()->getId();
+				if (((id1 == id12)&&(id2 == id22))||((id1 == id22) && (id2 == id12))) {
+					std::cout << "Arete: " << i << " & " << j << " Noeud A1: " << id1 << " & " << id2 << " Noeud A2: " << id12 << " & " << id22 << std::endl;
+					nbAreteDouble++;
+				}
+			}
+		}
+		if (nbAreteDouble == 0) {
+			std::cout << "Aucune" << std::endl;
+		}
+		std::cout << "-----------------------------------------------" << std::endl;
+	}
+
+	// Effectue 100 déplacements de recuit simulé! 
+	void tempsCalculRecuitSimule(double cool = 0.99999, double t = 100, int mode = 0) {
+		std::vector<int> bestResult = saveCopy();
+		int nbCroisement = getNbCroisement();
+
+		auto start = std::chrono::system_clock::now();
+		// DEBUT RECUIT UNE ITERATION
+		for (int iter = 0; iter < 10000 && nbCroisement > 0; iter++) {
+			int randomId;
+			if (mode == 0)
+				randomId = generateRand(_noeuds.size() - 1); // Selection aléatoire du noeud
+			else if (mode == 1) {
+				randomId = selectionNoeudTournoiBinaire();
+			}
+			else if (mode == 2) {
+				int nbTirageNoeud = ((100 - t) / 15) + 1;
+				randomId = selectionNoeudTournoiMultiple(nbTirageNoeud);
+			}
+			int randomEmpId = generateRand(_emplacementsPossibles.size() - 1); // Selection aléatoire d'un emplacement disponible (pas tres équiprobable)
+			// on retire si on pioche le meme emplacement
+			while (_noeuds[randomId].getEmplacement()->getId() == randomEmpId) {
+				randomEmpId = generateRand(_emplacementsPossibles.size() - 1);
+			}
+			int scoreNode;
+			bool swapped = false;
+			int idSwappedNode = -1;
+			Emplacement* oldEmplacement = _noeuds[randomId].getEmplacement();
+			if (!_emplacementsPossibles[randomEmpId].estDisponible()) {
+				idSwappedNode = _emplacementsPossibles[randomEmpId]._noeud->getId();
+				scoreNode = getScoreCroisementNode(randomId, idSwappedNode);
+				scoreNode += getScoreCroisementNode(idSwappedNode);
+				_noeuds[randomId].swap(&_emplacementsPossibles[randomEmpId]);
+				swapped = true;
+			}
+			else {
+				scoreNode = getScoreCroisementNode(randomId);
+				_noeuds[randomId].setEmplacement(&_emplacementsPossibles[randomEmpId]);
+			}
+			int newScoreNode;
+			if (swapped) {
+				newScoreNode = getScoreCroisementNode(randomId, idSwappedNode);
+				newScoreNode += getScoreCroisementNode(idSwappedNode);
+			}
+			else {
+				newScoreNode = getScoreCroisementNode(randomId);
+			}
+			int improve = newScoreNode - scoreNode;
+			if (improve < 0) {
+				bestResult = saveCopy();
+				nbCroisement += improve;
+			}
+			else {
+				double randDouble = generateDoubleRand(1.0);
+				if (randDouble >= exp(-improve / t)) {
+					if (swapped) {
+						_noeuds[randomId].swap(oldEmplacement);
+					}
+					else {
+						_noeuds[randomId].setEmplacement(oldEmplacement);
+					}
+				}
+				else {
+					nbCroisement += improve;
+				}
+			}
+			t *= cool;
+		}
+		// FIN RECUIT 100 ITERATIONS
+		auto end = std::chrono::system_clock::now();
+		std::chrono::duration<double> secondsTotal = end - start;
+		std::cout << "Prevision: " << secondsTotal.count() * 138.1545 << " secondes." << std::endl;
+	}
+
 	void clearNodeEmplacement() {
 		for (int i = 0; i < _noeuds.size(); i++) {
 			_noeuds[i].clearEmplacement();
@@ -85,7 +205,6 @@ public:
 			while (!_emplacementsPossibles[emplacementId].estDisponible()) {
 				emplacementId = (emplacementId + 1) % _emplacementsPossibles.size();
 			}
-			std::cout << "id: " << emplacementId << std::endl;
 			_noeuds[i].setEmplacement(&_emplacementsPossibles[emplacementId]);
 		}
 	}
@@ -102,16 +221,53 @@ public:
 
 	void placementNoeudAleatoire(int idNoeud)
 	{
-		int emplacementId = generateRand(_emplacementsPossibles.size()) - 1;
+		int emplacementId = generateRand(_emplacementsPossibles.size() - 1);
 		while (!_emplacementsPossibles[emplacementId].estDisponible()) {
 			emplacementId = (emplacementId + 1) % _emplacementsPossibles.size();
 		}
 		_noeuds[idNoeud].setEmplacement(&_emplacementsPossibles[emplacementId]);
 	}
 
-	long getNbCroisement()
+	bool hasIllegalCrossing() {
+		for (int i = 0; i < _liens.size() - 1; ++i)
+		{
+			for (int j = i + 1; j < _liens.size(); ++j)
+			{
+				//Aretes aretes1 = _liens[i], aretes2 = _liens[j];
+				if (!(_liens[i].contains(_liens[j].getNoeud1())
+					|| _liens[i].contains(_liens[j].getNoeud2())))
+				{
+					if (seCroisent(_liens[i], _liens[j]))
+					{
+						if (surSegment(_liens[i], *_liens[j].getNoeud1()) || surSegment(_liens[i], *_liens[j].getNoeud2()))
+						{
+							return true;
+						}
+						else if (surSegment(_liens[j], *_liens[i].getNoeud1()) || surSegment(_liens[j], *_liens[i].getNoeud2())) {
+							return true;
+						}
+					}
+				}
+				else {
+					Noeud* nodeNotInCommon = _liens[j].nodeNotInCommon(_liens[i]);
+					if (surSegment(_liens[i], *nodeNotInCommon))
+					{
+						return true;
+					}
+					else {
+						nodeNotInCommon = _liens[i].nodeNotInCommon(_liens[j]);
+						if (surSegment(_liens[j], *nodeNotInCommon)) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	long getNbCroisement() const
 	{
-		int debug = 0;
 		long total = 0;
 		for (int i = 0; i < _liens.size() - 1; ++i)
 		{
@@ -241,7 +397,7 @@ public:
 		if (DEBUG_GRAPHE) std::cout << "Nb Croisement avant recuit: " << nbCroisement << std::endl;
 		for (int iter = 0; t > 0.0001 && nbCroisement > 0; iter++) {
 			//if (iter % 100000 == 0) {
-			//	std::cout << "Iter: " << iter << " t: " << t << " intersections: " << newNbIntersection << std::endl;
+				//std::cout << "Iter: " << iter << " t: " << t << " intersections: " << nbCroisement << std::endl;
 			//}
 			int randomId;
 			if (mode == 0)
@@ -285,6 +441,7 @@ public:
 			if (improve < 0) {
 				bestResult = saveCopy();
 				nbCroisement += improve;
+				if (DEBUG_GRAPHE) std::cout << "Graphe nnode: " << _noeuds.size() << " best score: " << nbCroisement << " iter: " << iter << " t: " << t << std::endl;
 			}
 			else {
 				double randDouble = generateDoubleRand(1.0);
@@ -303,7 +460,73 @@ public:
 			t *= cool;
 		}
 		loadCopy(bestResult);
-		if (DEBUG_GRAPHE) std::cout << "Meilleur resultat du recuit: " << nbCroisement << std::endl;
+		if (DEBUG_GRAPHE) std::cout << "Meilleur resultat du recuit: " << getNbCroisement() << std::endl;
+	}
+
+	// Lance l'algorithme de recuit simulé sur le graphe pour minimiser le nombre d'intersection
+	void stepRecuitSimule(double& t, int &nbCrois, double cool = 0.99999, int mode = 0) {
+		std::vector<int> bestResult = saveCopy();
+		int nbCroisement = nbCrois;
+		if (DEBUG_GRAPHE) std::cout << "Nb Croisement avant recuit: " << nbCroisement << std::endl;
+		int randomId;
+		if (mode == 0)
+			randomId = generateRand(_noeuds.size() - 1); // Selection aléatoire du noeud
+		else if (mode == 1) {
+			randomId = selectionNoeudTournoiBinaire();
+		}
+		else if (mode == 2) {
+			int nbTirageNoeud = ((100 - t) / 15) + 1;
+			randomId = selectionNoeudTournoiMultiple(nbTirageNoeud);
+		}
+		int randomEmpId = generateRand(_emplacementsPossibles.size() - 1); // Selection aléatoire d'un emplacement disponible (pas tres équiprobable)
+		// on retire si on pioche le meme emplacement
+		while (_noeuds[randomId].getEmplacement()->getId() == randomEmpId) {
+			randomEmpId = generateRand(_emplacementsPossibles.size() - 1);
+		}
+		int scoreNode;
+		bool swapped = false;
+		int idSwappedNode = -1;
+		Emplacement* oldEmplacement = _noeuds[randomId].getEmplacement();
+		if (!_emplacementsPossibles[randomEmpId].estDisponible()) {
+			idSwappedNode = _emplacementsPossibles[randomEmpId]._noeud->getId();
+			scoreNode = getScoreCroisementNode(randomId, idSwappedNode);
+			scoreNode += getScoreCroisementNode(idSwappedNode);
+			_noeuds[randomId].swap(&_emplacementsPossibles[randomEmpId]);
+			swapped = true;
+		}
+		else {
+			scoreNode = getScoreCroisementNode(randomId);
+			_noeuds[randomId].setEmplacement(&_emplacementsPossibles[randomEmpId]);
+		}
+		int newScoreNode;
+		if (swapped) {
+			newScoreNode = getScoreCroisementNode(randomId, idSwappedNode);
+			newScoreNode += getScoreCroisementNode(idSwappedNode);
+		}
+		else {
+			newScoreNode = getScoreCroisementNode(randomId);
+		}
+		int improve = newScoreNode - scoreNode;
+		if (improve < 0) {
+			bestResult = saveCopy();
+			nbCroisement += improve;
+		}
+		else {
+			double randDouble = generateDoubleRand(1.0);
+			if (randDouble >= exp(-improve / t)) {
+				if (swapped) {
+					_noeuds[randomId].swap(oldEmplacement);
+				}
+				else {
+					_noeuds[randomId].setEmplacement(oldEmplacement);
+				}
+			}
+			else {
+				nbCroisement += improve;
+			}
+		}
+		t *= cool;
+		loadCopy(bestResult);
 	}
 
 	// Lance l'algorithme de recuit simulé sur le graphe pour minimiser le nombre d'intersection
@@ -1124,6 +1347,21 @@ public:
 		}
 	}
 
+	void completePlacementAleatoire()
+	{
+		if (DEBUG_GRAPHE) std::cout << "Placement aleatoire" << std::endl;
+		for (int i = 0; i < _noeuds.size(); ++i)
+		{
+			if (_noeuds[i]._emplacement == nullptr) {
+				int emplacementId = generateRand(_emplacementsPossibles.size() - 1);
+				while (!_emplacementsPossibles[emplacementId].estDisponible()) {
+					emplacementId = (emplacementId + 1) % _emplacementsPossibles.size();
+				}
+				_noeuds[i].setEmplacement(&_emplacementsPossibles[emplacementId]);
+			}
+		}
+	}
+
 	bool emplacementRestant()
 	{
 		for (Emplacement emplacement : _emplacementsPossibles)
@@ -1169,9 +1407,49 @@ public:
 					x = generateRand(gridWidth);
 					y = generateRand(gridHeight);
 				} while (marque[y][x]);
+				marque[y][x] = true;
 				_emplacementsPossibles.push_back(Emplacement(Point(x, y), _emplacementsPossibles.size()));
 			}
 		}
+	}
+
+	// Ajoute _noeud.size() emplacement par défaut ou n emplacement 
+	// Si le nombre d'emplacement est laissé à -1, on génere dans une grille de taille _noeud.size()*_noeud.size()
+	void generateEmplacements(int n=-1) {
+		int nbEmplacement = n;
+		if (nbEmplacement == -1) {
+			gridWidth = _noeuds.size();
+			gridHeight = _noeuds.size();
+			nbEmplacement = _noeuds.size();
+		}
+		else {
+			int nbTotal = gridWidth * gridHeight;
+			if (n + _emplacementsPossibles.size() > nbTotal) {
+				if (DEBUG_GRAPHE) std::cout << "Pas assez de place dans la grille. Grille: " << nbTotal << " " << n << " * emp: " << n * _emplacementsPossibles.size() << std::endl;
+				return;
+			}
+		}
+
+		std::vector<std::vector<bool>> marque;
+		for (int i = 0; i <= gridHeight; i++) {
+			std::vector<bool> tmpVec(gridWidth + 1);
+			marque.push_back(tmpVec);
+		}
+		for (int i = 0; i < _emplacementsPossibles.size(); i++) {
+			int x = _emplacementsPossibles[i].getX();
+			int y = _emplacementsPossibles[i].getY();
+			marque[y][x] = true;
+		}
+		int x, y;
+		for (int i = 0; i < nbEmplacement; i++) {
+			do {
+				x = generateRand(gridWidth);
+				y = generateRand(gridHeight);
+			} while (marque[y][x]);
+			marque[y][x] = true;
+			_emplacementsPossibles.push_back(Emplacement(Point(x, y), _emplacementsPossibles.size()));
+		}
+
 	}
 
 	std::vector<int> saveCopy() {
@@ -1319,14 +1597,14 @@ public:
 		return score;
 	}
 
-	void croisementVoisinageFrom(Graphe& originalGraphe1, Graphe& originalGraphe2)
+	void croisementVoisinageFrom(Graphe& originalGraphe1, Graphe& originalGraphe2, bool useRand)
 	{
 		Graphe* currentGraphe;
 		Graphe graphe1, graphe2;
 		graphe1.copyFromGraphe(originalGraphe1);
 		graphe2.copyFromGraphe(originalGraphe2);
 
-		int currentGrapheNumber = generateRand(2);
+		int currentGrapheNumber = generateRand(1)+1;
 		if (currentGrapheNumber == 1) currentGraphe = &graphe1;
 		else currentGraphe = &graphe2;
 
@@ -1420,8 +1698,14 @@ public:
 					noeudsAVerifier.push_back(i);
 				}
 			}
-			graphe1.completeBasicGlouton();
-			graphe2.completeBasicGlouton();
+			if (useRand) {
+				graphe1.completePlacementAleatoire();
+				graphe2.completePlacementAleatoire();
+			}
+			else {
+				graphe1.completeBasicGlouton();
+				graphe2.completeBasicGlouton();
+			}
 			//Si les lieux coincident les noeuds ne sont plus à traiter
 			for (int i = 0; i < noeudsAVerifier.size(); ++i)
 			{
@@ -1468,7 +1752,7 @@ public:
 		std::vector<int> noeudNonTraite;
 		for (int noeud = 0; noeud < _noeuds.size(); ++noeud)
 		{
-			int random = generateRand(2);
+			int random = generateRand(1)+1;
 			Graphe* currentGraphe;
 			if (random == 1)
 			{
@@ -1493,6 +1777,10 @@ public:
 		{
 			placementNoeudAleatoire(noeud);
 		}
+	}
+	
+	bool operator < (const Graphe& G) const {
+		return (getNbCroisement() < G.getNbCroisement());
 	}
 
 };
